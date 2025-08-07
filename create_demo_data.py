@@ -12,84 +12,75 @@ def create_demo_data():
     
     conn = sqlite3.connect('database/app.db')
     
-    # Clear existing data
-   # Create tables first (import from main.py)
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
-# Create tables if they don't exist
-conn.execute('''
-    CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL,
-        role TEXT NOT NULL,
-        first_name TEXT NOT NULL,
-        last_name TEXT NOT NULL,
-        email TEXT,
-        phone TEXT,
-        parent_id INTEGER,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (parent_id) REFERENCES users (id)
-    )
-''')
-
-conn.execute('''
-    CREATE TABLE IF NOT EXISTS events (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL,
-        description TEXT,
-        event_type TEXT NOT NULL,
-        date DATE NOT NULL,
-        start_time TIME NOT NULL,
-        end_time TIME,
-        location TEXT,
-        created_by INTEGER,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (created_by) REFERENCES users (id)
-    )
-''')
-
-conn.execute('''
-    CREATE TABLE IF NOT EXISTS attendance (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        event_id INTEGER NOT NULL,
-        sign_in_time TIMESTAMP,
-        sign_out_time TIMESTAMP,
-        status TEXT DEFAULT 'signed_in',
-        FOREIGN KEY (user_id) REFERENCES users (id),
-        FOREIGN KEY (event_id) REFERENCES events (id)
-    )
-''')
-
-conn.execute('''
-    CREATE TABLE IF NOT EXISTS academic_requirements (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        student_id INTEGER NOT NULL,
-        subject TEXT NOT NULL,
-        grade_required REAL NOT NULL,
-        current_grade REAL,
-        semester TEXT NOT NULL,
-        due_date DATE,
-        status TEXT DEFAULT 'pending',
-        notes TEXT,
-        created_by INTEGER,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (student_id) REFERENCES users (id),
-        FOREIGN KEY (created_by) REFERENCES users (id)
-    )
-''')
-
-# Clear existing data if tables exist
-try:
-    conn.execute('DELETE FROM attendance')
-    conn.execute('DELETE FROM academic_requirements')
-    conn.execute('DELETE FROM events')
-    conn.execute('DELETE FROM users')
-except:
-    pass  # Tables might not exist yet
+    # Create tables first
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
+            role TEXT NOT NULL,
+            first_name TEXT NOT NULL,
+            last_name TEXT NOT NULL,
+            email TEXT,
+            phone TEXT,
+            parent_id INTEGER,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (parent_id) REFERENCES users (id)
+        )
+    ''')
+    
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS events (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            description TEXT,
+            event_type TEXT NOT NULL,
+            date DATE NOT NULL,
+            start_time TIME NOT NULL,
+            end_time TIME,
+            location TEXT,
+            created_by INTEGER,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (created_by) REFERENCES users (id)
+        )
+    ''')
+    
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS attendance (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            event_id INTEGER NOT NULL,
+            sign_in_time TIMESTAMP,
+            sign_out_time TIMESTAMP,
+            status TEXT DEFAULT 'signed_in',
+            FOREIGN KEY (user_id) REFERENCES users (id),
+            FOREIGN KEY (event_id) REFERENCES events (id)
+        )
+    ''')
+    
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS academic_requirements (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            student_id INTEGER NOT NULL,
+            subject TEXT NOT NULL,
+            grade_required REAL NOT NULL,
+            current_grade REAL,
+            semester TEXT NOT NULL,
+            due_date DATE,
+            status TEXT DEFAULT 'pending',
+            notes TEXT,
+            created_by INTEGER,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (student_id) REFERENCES users (id),
+            FOREIGN KEY (created_by) REFERENCES users (id)
+        )
+    ''')
+    
+    # Clear existing data safely
+    conn.execute('DELETE FROM attendance WHERE 1=1')
+    conn.execute('DELETE FROM academic_requirements WHERE 1=1')
+    conn.execute('DELETE FROM events WHERE 1=1')
+    conn.execute('DELETE FROM users WHERE 1=1')
     
     # Create demo users
     users = [
