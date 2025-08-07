@@ -398,10 +398,10 @@ def get_students():
     
     conn = get_db()
     students = conn.execute('''
-        SELECT id, username, first_name, last_name, email, phone
+        SELECT id, username, first_name, last_name, email, phone, grade
         FROM users 
         WHERE role = 'student'
-        ORDER BY last_name, first_name
+        ORDER BY grade, last_name, first_name
     ''').fetchall()
     conn.close()
     
