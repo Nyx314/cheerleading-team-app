@@ -73,7 +73,7 @@ def create_demo_data():
         ('parent3', hash_password('password123'), 'parent', 'David', 'Johnson', 'david.johnson@email.com', '555-0303', None, olivia_id),
     ]
     
-    for username, password, role, first_name, last_name, email, phone, grade, parent_id in users:
+   for username, password, role, first_name, last_name, email, phone, grade, parent_id in users:
     conn.execute('''
         INSERT INTO users (username, password, role, first_name, last_name, email, phone, grade, parent_id)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
