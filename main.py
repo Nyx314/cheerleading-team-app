@@ -421,4 +421,14 @@ def serve_static_files(path):
 
 if __name__ == '__main__':
     init_db()
+    
+    # Create demo users on startup
+    from create_demo_data import create_demo_data
+    try:
+        create_demo_data()
+        print("Demo users loaded successfully!")
+    except Exception as e:
+        print(f"Demo user creation failed: {e}")
+        pass
+        
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=False)
