@@ -422,3 +422,268 @@ def serve_static_files(path):
 if __name__ == '__main__':
     init_db()
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=False)
+    # =========== ADD THESE NEW ROUTES FOR EVENT MANAGEMENT ===========
+
+@app.route('/api/events', methods=['POST'])
+def create_event():
+    if 'user_id' not in session:
+        return jsonify({'error': 'Not authenticated'}), 401
+    
+    # Check if user is coach or athletic director
+    if session['role'] not in ['coach', 'assistant_coach', 'athletic_director']:
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    data = request.json
+    
+    # Validate required fields
+    required_fields = ['title', 'event_type', 'date', 'start_time']
+    for field in required_fields:
+        if field not in data or not data[field]:
+            return jsonify({'error': f'{field} is required'}), 400
+    
+    db = get_db()
+    cursor = db.cursor()
+    
+    try:
+        cursor.execute('''
+            INSERT INTO events (title, description, event_type, date, start_time, 
+                              end_time, location, is_mandatory, created_by)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (
+            data['title'],
+            data.get('description', ''),
+            data['event_type'],
+            data['date'],
+            data['start_time'],
+            data.get('end_time'),
+            data.get('location', ''),
+            data.get('is_mandatory', False),
+            session['user_id']
+        ))
+        
+        event_id = cursor.lastrowid
+        db.commit()
+        
+        # Fetch the created event
+        event = db.execute('SELECT * FROM events WHERE id = ?', (event_id,)).fetchone()
+        db.close()
+        
+        return jsonify(dict(event)), 201
+        
+    except Exception as e:
+        db.close()
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/events/<int:event_id>', methods=['PUT'])
+def update_event(event_id):
+    if 'user_id' not in session:
+        return jsonify({'error': 'Not authenticated'}), 401
+    
+    if session['role'] not in ['coach', 'assistant_coach', 'athletic_director']:
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    data = request.json
+    db = get_db()
+    
+    # Build update query dynamically
+    update_fields = []
+    values = []
+    
+    allowed_fields = ['title', 'description', 'event_type', 'date', 'start_time', 
+                     'end_time', 'location', 'is_mandatory']
+    
+    for field in allowed_fields:
+        if field in data:
+            update_fields.append(f'{field} = ?')
+            values.append(data[field])
+    
+    if not update_fields:
+        return jsonify({'error': 'No fields to update'}), 400
+    
+    values.append(event_id)
+    
+    try:
+        db.execute(
+            f"UPDATE events SET {', '.join(update_fields)} WHERE id = ?",
+            values
+        )
+        db.commit()
+        
+        event = db.execute('SELECT * FROM events WHERE id = ?', (event_id,)).fetchone()
+        db.close()
+        
+        return jsonify(dict(event))
+        
+    except Exception as e:
+        db.close()
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/events/<int:event_id>', methods=['DELETE'])
+def delete_event(event_id):
+    if 'user_id' not in session:
+        return jsonify({'error': 'Not authenticated'}), 401
+    
+    if session['role'] not in ['coach', 'assistant_coach', 'athletic_director']:
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    db = get_db()
+    
+    try:
+        # Delete related attendance records first
+        db.execute('DELETE FROM attendance WHERE event_id = ?', (event_id,))
+        # Delete the event
+        db.execute('DELETE FROM events WHERE id = ?', (event_id,))
+        db.commit()
+        db.close()
+        
+        return jsonify({'message': 'Event deleted successfully'})
+        
+    except Exception as e:
+        db.close()
+        return jsonify({'error': str(e)}), 400
+
+# =========== ADD THESE NEW ROUTES FOR ACADEMIC MANAGEMENT ===========
+
+@app.route('/api/academics/requirements', methods=['GET'])
+def get_requirements():
+    if 'user_id' not in session:
+        return jsonify({'error': 'Not authenticated'}), 401
+    
+    db = get_db()
+    requirements = db.execute(
+        'SELECT * FROM academic_requirements ORDER BY subject'
+    ).fetchall()
+    db.close()
+    
+    return jsonify([dict(req) for req in requirements])
+
+@app.route('/api/academics/requirements', methods=['POST'])
+def create_requirement():
+    if 'user_id' not in session:
+        return jsonify({'error': 'Not authenticated'}), 401
+    
+    if session['role'] not in ['coach', 'assistant_coach', 'athletic_director']:
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    data = request.json
+    
+    # Validate required fields
+    if not data.get('subject') or not data.get('grade_required'):
+        return jsonify({'error': 'Subject and grade_required are required'}), 400
+    
+    db = get_db()
+    
+    try:
+        cursor = db.cursor()
+        cursor.execute('''
+            INSERT INTO academic_requirements (subject, grade_required, semester, year)
+            VALUES (?, ?, ?, ?)
+        ''', (
+            data['subject'],
+            data['grade_required'],
+            data.get('semester', 'Fall'),
+            data.get('year', datetime.now().year)
+        ))
+        
+        req_id = cursor.lastrowid
+        db.commit()
+        
+        requirement = db.execute(
+            'SELECT * FROM academic_requirements WHERE id = ?', 
+            (req_id,)
+        ).fetchone()
+        db.close()
+        
+        return jsonify(dict(requirement)), 201
+        
+    except Exception as e:
+        db.close()
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/academics/requirements/<int:req_id>', methods=['DELETE'])
+def delete_requirement(req_id):
+    if 'user_id' not in session:
+        return jsonify({'error': 'Not authenticated'}), 401
+    
+    if session['role'] not in ['coach', 'assistant_coach', 'athletic_director']:
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    db = get_db()
+    
+    try:
+        # Delete related student grades first
+        db.execute('DELETE FROM student_grades WHERE requirement_id = ?', (req_id,))
+        # Delete the requirement
+        db.execute('DELETE FROM academic_requirements WHERE id = ?', (req_id,))
+        db.commit()
+        db.close()
+        
+        return jsonify({'message': 'Requirement deleted successfully'})
+        
+    except Exception as e:
+        db.close()
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/students', methods=['GET'])
+def get_students():
+    if 'user_id' not in session:
+        return jsonify({'error': 'Not authenticated'}), 401
+    
+    if session['role'] not in ['coach', 'assistant_coach', 'athletic_director']:
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    db = get_db()
+    students = db.execute('''
+        SELECT s.*, u.first_name, u.last_name, u.email
+        FROM students s
+        JOIN users u ON s.user_id = u.id
+        ORDER BY u.last_name, u.first_name
+    ''').fetchall()
+    db.close()
+    
+    return jsonify([dict(student) for student in students])
+
+@app.route('/api/students/<int:student_id>/grades', methods=['POST'])
+def update_student_grade(student_id):
+    if 'user_id' not in session:
+        return jsonify({'error': 'Not authenticated'}), 401
+    
+    if session['role'] not in ['coach', 'assistant_coach', 'athletic_director']:
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    data = request.json
+    
+    if not data.get('requirement_id') or data.get('grade') is None:
+        return jsonify({'error': 'requirement_id and grade are required'}), 400
+    
+    db = get_db()
+    
+    try:
+        # Check if grade entry exists
+        existing = db.execute('''
+            SELECT id FROM student_grades 
+            WHERE student_id = ? AND requirement_id = ?
+        ''', (student_id, data['requirement_id'])).fetchone()
+        
+        if existing:
+            # Update existing grade
+            db.execute('''
+                UPDATE student_grades 
+                SET current_grade = ?, last_updated = ?
+                WHERE student_id = ? AND requirement_id = ?
+            ''', (data['grade'], datetime.now(), student_id, data['requirement_id']))
+        else:
+            # Insert new grade
+            db.execute('''
+                INSERT INTO student_grades (student_id, requirement_id, current_grade, last_updated)
+                VALUES (?, ?, ?, ?)
+            ''', (student_id, data['requirement_id'], data['grade'], datetime.now()))
+        
+        db.commit()
+        db.close()
+        
+        return jsonify({'message': 'Grade updated successfully'})
+        
+    except Exception as e:
+        db.close()
+        return jsonify({'error': str(e)}), 400
