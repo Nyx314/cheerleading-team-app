@@ -1,352 +1,171 @@
 import sqlite3
 import hashlib
+from datetime import datetime, timedelta
 import os
 
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
-def create_demo_data():
-    # Create database directory
+def create_aviators_data():
+    # Ensure database directory exists
     os.makedirs('database', exist_ok=True)
     
-    # Connect to database
     conn = sqlite3.connect('database/app.db')
     
-    # Create users table with grade field
-    conn.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL,
-            role TEXT NOT NULL,
-            first_name TEXT NOT NULL,
-            last_name TEXT NOT NULL,
-            email TEXT,
-            phone TEXT,
-            grade TEXT,
-            parent_id INTEGER,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (parent_id) REFERENCES users (id)
-        )
-    ''')
-    
-    # Clear existing users
+    # Clear existing data
+    conn.execute('DELETE FROM attendance')
+    conn.execute('DELETE FROM academic_requirements')
+    conn.execute('DELETE FROM events')
     conn.execute('DELETE FROM users')
     
-    # Add demo users organized by grade
-    users = [
-        # Coaches (no grade needed)
-        ('coach', hash_password('password123'), 'coach', 'Y', 'Llevada', 'coach@aviators.edu', '555-0101', None, None),
-        ('assistant', hash_password('password123'), 'coach', 'Kat', 'Atherly', 'assistant@aviators.edu', '555-0102', None, None),
-        
-        // ADD THIS TO YOUR static/index.html - REPLACE the renderCoachDashboard function
-
-function renderCoachDashboard() {
-    const alertsHtml = currentAlerts.length === 0 
-        ? '<div class="empty-state">No academic alerts at this time</div>'
-        : currentAlerts.map(alert => `
-            <div class="alert-item">
-                <div class="alert-title">${alert.first_name} ${alert.last_name} - ${alert.subject}</div>
-                <div class="alert-text">Current: ${alert.current_grade}% (Required: ${alert.grade_required}%)</div>
-            </div>
-        `).join('');
-    
-    return `
-        <div class="main-content">
-            <div class="card">
-                <h2 class="card-title">Coach Dashboard 📊</h2>
-                <p class="card-subtitle">Manage your team and track performance</p>
-                
-                <div class="stats-grid">
-                    <div class="stat-card red">
-                        <div class="stat-title">Academic Alerts</div>
-                        <div class="stat-value">${currentAlerts.length}</div>
-                    </div>
-                    <div class="stat-card blue">
-                        <div class="stat-title">Total Events</div>
-                        <div class="stat-value">${currentEvents.length}</div>
-                    </div>
-                    <div class="stat-card green">
-                        <div class="stat-title">Active Students</div>
-                        <div class="stat-value">15</div>
-                    </div>
-                    <div class="stat-card purple">
-                        <div class="stat-title">This Season</div>
-                        <div class="stat-value">2024</div>
-                    </div>
-                </div>
-                
-                <div style="margin-top: 20px;">
-                    <button class="btn-action" onclick="showCreateEvent()">
-                        ➕ Create New Event
-                    </button>
-                    <button class="btn-secondary" onclick="showAttendanceTracker()">
-                        📋 View Attendance
-                    </button>
-                    <button class="btn-action" onclick="showStudentList()">
-                        👥 Manage Students
-                    </button>
-                </div>
-            </div>
-
-            <!-- CREATE EVENT FORM -->
-            <div id="createEventCard" class="card" style="display: none;">
-                <h3 class="section-title">➕ Create New Event</h3>
-                <form id="createEventForm">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
-                        <div>
-                            <label class="form-label">Event Title</label>
-                            <input type="text" id="eventTitle" class="form-input" required placeholder="Monday Practice">
-                        </div>
-                        <div>
-                            <label class="form-label">Event Type</label>
-                            <select id="eventType" class="form-input" required>
-                                <option value="practice">Practice</option>
-                                <option value="competition">Competition</option>
-                                <option value="performance">Performance</option>
-                                <option value="meeting">Team Meeting</option>
-                                <option value="fundraiser">Fundraiser</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px;">
-                        <div>
-                            <label class="form-label">Date</label>
-                            <input type="date" id="eventDate" class="form-input" required>
-                        </div>
-                        <div>
-                            <label class="form-label">Start Time</label>
-                            <input type="time" id="startTime" class="form-input" required>
-                        </div>
-                        <div>
-                            <label class="form-label">End Time</label>
-                            <input type="time" id="endTime" class="form-input">
-                        </div>
-                    </div>
-                    
-                    <div style="margin-bottom: 16px;">
-                        <label class="form-label">Location</label>
-                        <input type="text" id="eventLocation" class="form-input" placeholder="Main Gym">
-                    </div>
-                    
-                    <div style="margin-bottom: 16px;">
-                        <label class="form-label">Description (Optional)</label>
-                        <textarea id="eventDescription" class="form-input" rows="3" placeholder="Practice details..."></textarea>
-                    </div>
-                    
-                    <div style="display: flex; gap: 12px;">
-                        <button type="button" onclick="hideCreateEvent()" class="btn-secondary">Cancel</button>
-                        <button type="submit" class="btn-primary">Create Event</button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- ATTENDANCE TRACKER -->
-            <div id="attendanceCard" class="card" style="display: none;">
-                <h3 class="section-title">📋 Attendance Tracker</h3>
-                <div id="attendanceContent">
-                    <p>Loading attendance data...</p>
-                </div>
-            </div>
-
-            <!-- STUDENT LIST -->
-            <div id="studentListCard" class="card" style="display: none;">
-                <h3 class="section-title">👥 Team Roster</h3>
-                <div id="studentListContent">
-                    <p>Loading student list...</p>
-                </div>
-            </div>
-            
-            ${currentAlerts.length > 0 ? `
-            <div class="card">
-                <h3 class="section-title">⚠️ Academic Alerts</h3>
-                ${alertsHtml}
-            </div>
-            ` : ''}
-            
-            <div class="card">
-                <h3 class="section-title">Recent Events</h3>
-                <div class="events-list">
-                    ${currentEvents.slice(0, 5).map(event => `
-                        <div class="event-item">
-                            <div class="event-info">
-                                <h4>${event.title}</h4>
-                                <div class="event-time">${event.date} | ${event.start_time}</div>
-                                <div class="event-location">${event.location || 'TBD'}</div>
-                            </div>
-                            <div style="display: flex; gap: 8px;">
-                                <div style="padding: 8px 12px; background: #ebf8ff; color: #3182ce; border-radius: 4px; font-size: 12px; font-weight: 600;">
-                                    ${event.event_type.toUpperCase()}
-                                </div>
-                                <button class="btn-signin" onclick="viewEventAttendance(${event.id})">
-                                    View Attendance
-                                </button>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-// ADD THESE NEW FUNCTIONS TO YOUR JAVASCRIPT:
-
-function showCreateEvent() {
-    document.getElementById('createEventCard').style.display = 'block';
-    document.getElementById('attendanceCard').style.display = 'none';
-    document.getElementById('studentListCard').style.display = 'none';
-    
-    // Set default date to today
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('eventDate').value = today;
-    
-    // Add form submission handler
-    document.getElementById('createEventForm').onsubmit = handleCreateEvent;
-}
-
-function hideCreateEvent() {
-    document.getElementById('createEventCard').style.display = 'none';
-}
-
-function showAttendanceTracker() {
-    document.getElementById('createEventCard').style.display = 'none';
-    document.getElementById('attendanceCard').style.display = 'block';
-    document.getElementById('studentListCard').style.display = 'none';
-    loadAttendanceData();
-}
-
-function showStudentList() {
-    document.getElementById('createEventCard').style.display = 'none';
-    document.getElementById('attendanceCard').style.display = 'none';
-    document.getElementById('studentListCard').style.display = 'block';
-    loadStudentList();
-}
-
-async function handleCreateEvent(event) {
-    event.preventDefault();
-    
-    const eventData = {
-        title: document.getElementById('eventTitle').value,
-        event_type: document.getElementById('eventType').value,
-        date: document.getElementById('eventDate').value,
-        start_time: document.getElementById('startTime').value,
-        end_time: document.getElementById('endTime').value,
-        location: document.getElementById('eventLocation').value,
-        description: document.getElementById('eventDescription').value
-    };
-    
-    try {
-        await apiRequest('/api/events', {
-            method: 'POST',
-            body: JSON.stringify(eventData)
-        });
-        
-        alert('✅ Event created successfully!');
-        document.getElementById('createEventForm').reset();
-        hideCreateEvent();
-        await loadDashboardData();
-        render();
-    } catch (error) {
-        alert('❌ Error creating event: ' + error.message);
-    }
-}
-
-async function loadAttendanceData() {
-    try {
-        const events = await getAllEvents();
-        const attendanceHtml = events.slice(0, 10).map(event => `
-            <div class="event-item">
-                <div class="event-info">
-                    <h4>${event.title}</h4>
-                    <div class="event-time">${event.date} | ${event.start_time}</div>
-                    <div class="event-location">${event.location || 'TBD'}</div>
-                </div>
-                <button class="btn-signin" onclick="viewEventAttendance(${event.id})">
-                    View Attendance (${event.attendance_count || 0})
-                </button>
-            </div>
-        `).join('');
-        
-        document.getElementById('attendanceContent').innerHTML = attendanceHtml;
-    } catch (error) {
-        document.getElementById('attendanceContent').innerHTML = 
-            '<div class="empty-state">Error loading attendance data</div>';
-    }
-}
-
-async function loadStudentList() {
-    try {
-        const response = await apiRequest('/api/users/students');
-        const studentsHtml = response.map(student => `
-            <div class="event-item">
-                <div class="event-info">
-                    <h4>${student.first_name} ${student.last_name}</h4>
-                    <div class="event-time">Username: ${student.username}</div>
-                    <div class="event-location">${student.email || 'No email'}</div>
-                </div>
-                <div style="display: flex; gap: 8px;">
-                    <button class="btn-signin" onclick="viewStudentAttendance(${student.id})">
-                        View Attendance
-                    </button>
-                </div>
-            </div>
-        `).join('');
-        
-        document.getElementById('studentListContent').innerHTML = studentsHtml;
-    } catch (error) {
-        document.getElementById('studentListContent').innerHTML = 
-            '<div class="empty-state">Error loading student list</div>';
-    }
-}
-
-async function viewEventAttendance(eventId) {
-    try {
-        const response = await apiRequest(`/api/events/${eventId}/attendance`);
-        const attendees = response.map(att => 
-            `${att.first_name} ${att.last_name} - Signed in: ${att.sign_in_time}`
-        ).join('\n');
-        
-        alert(`Event Attendance:\n\n${attendees || 'No one signed in yet'}`);
-    } catch (error) {
-        alert('Error loading event attendance: ' + error.message);
-    }
-}
-
-async function viewStudentAttendance(studentId) {
-    try {
-        const response = await apiRequest(`/api/attendance/students/${studentId}/attendance`);
-        const attendance = response.slice(0, 10).map(att => 
-            `${att.title} (${att.date}) - ${att.status}`
-        ).join('\n');
-        
-        alert(`Student Attendance:\n\n${attendance || 'No attendance records'}`);
-    } catch (error) {
-        alert('Error loading student attendance: ' + error.message);
-    }
-}
-    
-    # Add parents for some students
-    emma_id = conn.execute('SELECT id FROM users WHERE username = "student1"').fetchone()[0]
-    sophia_id = conn.execute('SELECT id FROM users WHERE username = "student2"').fetchone()[0]
-    olivia_id = conn.execute('SELECT id FROM users WHERE username = "student3"').fetchone()[0]
-    
-    parents = [
-        ('parent1', hash_password('password123'), 'parent', 'John', 'Smith', 'john.smith@email.com', '555-0301', None, emma_id),
-        ('parent2', hash_password('password123'), 'parent', 'Maria', 'Garcia', 'maria.garcia@email.com', '555-0302', None, sophia_id),
-        ('parent3', hash_password('password123'), 'parent', 'David', 'Johnson', 'david.johnson@email.com', '555-0303', None, olivia_id),
+    # AVIATORS COACHING STAFF
+    coaches_staff = [
+        # Format: (username, password, role, first_name, last_name, email, phone, grade, parent_id)
+        ('coach.llevada', hash_password('Aviators2024!'), 'coach', 'Y', 'Llevada', 'y.llevada@aviators.edu', '555-0101', None, None),
+        ('coach.atherly', hash_password('Aviators2024!'), 'coach', 'Kat', 'Atherly', 'k.atherly@aviators.edu', '555-0102', None, None),
     ]
     
-    for username, password, role, first_name, last_name, email, phone, grade, parent_id in parents:
+    for user in coaches_staff:
         conn.execute('''
             INSERT INTO users (username, password, role, first_name, last_name, email, phone, grade, parent_id)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (username, password, role, first_name, last_name, email, phone, grade, parent_id))
+        ''', user)
+    
+    # AVIATORS CHEERLEADING TEAM BY GRADE
+    # Replace these with your actual team members - organized by grade
+    
+    # 9TH GRADE CHEERLEADERS
+    ninth_graders = [
+        # Format: (username, password, role, first_name, last_name, email, phone, grade, parent_id)
+        ('emma.smith', hash_password('Aviators2024!'), 'student', 'Emma', 'Smith', 'emma.smith@student.aviators.edu', '555-1001', '9th', None),
+        ('sophia.johnson', hash_password('Aviators2024!'), 'student', 'Sophia', 'Johnson', 'sophia.johnson@student.aviators.edu', '555-1002', '9th', None),
+        ('olivia.williams', hash_password('Aviators2024!'), 'student', 'Olivia', 'Williams', 'olivia.williams@student.aviators.edu', '555-1003', '9th', None),
+        # ADD MORE 9TH GRADERS HERE:
+        # ('firstname.lastname', hash_password('Aviators2024!'), 'student', 'FirstName', 'LastName', 'firstname.lastname@student.aviators.edu', '555-1004', '9th', None),
+    ]
+    
+    # 10TH GRADE CHEERLEADERS
+    tenth_graders = [
+        ('ava.brown', hash_password('Aviators2024!'), 'student', 'Ava', 'Brown', 'ava.brown@student.aviators.edu', '555-1101', '10th', None),
+        ('isabella.davis', hash_password('Aviators2024!'), 'student', 'Isabella', 'Davis', 'isabella.davis@student.aviators.edu', '555-1102', '10th', None),
+        ('mia.miller', hash_password('Aviators2024!'), 'student', 'Mia', 'Miller', 'mia.miller@student.aviators.edu', '555-1103', '10th', None),
+        # ADD MORE 10TH GRADERS HERE:
+        # ('firstname.lastname', hash_password('Aviators2024!'), 'student', 'FirstName', 'LastName', 'firstname.lastname@student.aviators.edu', '555-1104', '10th', None),
+    ]
+    
+    # 11TH GRADE CHEERLEADERS
+    eleventh_graders = [
+        ('charlotte.wilson', hash_password('Aviators2024!'), 'student', 'Charlotte', 'Wilson', 'charlotte.wilson@student.aviators.edu', '555-1201', '11th', None),
+        ('amelia.moore', hash_password('Aviators2024!'), 'student', 'Amelia', 'Moore', 'amelia.moore@student.aviators.edu', '555-1202', '11th', None),
+        ('harper.taylor', hash_password('Aviators2024!'), 'student', 'Harper', 'Taylor', 'harper.taylor@student.aviators.edu', '555-1203', '11th', None),
+        # ADD MORE 11TH GRADERS HERE:
+        # ('firstname.lastname', hash_password('Aviators2024!'), 'student', 'FirstName', 'LastName', 'firstname.lastname@student.aviators.edu', '555-1204', '11th', None),
+    ]
+    
+    # 12TH GRADE CHEERLEADERS (SENIORS)
+    seniors = [
+        ('evelyn.anderson', hash_password('Aviators2024!'), 'student', 'Evelyn', 'Anderson', 'evelyn.anderson@student.aviators.edu', '555-1301', '12th', None),
+        ('abigail.thomas', hash_password('Aviators2024!'), 'student', 'Abigail', 'Thomas', 'abigail.thomas@student.aviators.edu', '555-1302', '12th', None),
+        ('emily.jackson', hash_password('Aviators2024!'), 'student', 'Emily', 'Jackson', 'emily.jackson@student.aviators.edu', '555-1303', '12th', None),
+        # ADD MORE SENIORS HERE:
+        # ('firstname.lastname', hash_password('Aviators2024!'), 'student', 'FirstName', 'LastName', 'firstname.lastname@student.aviators.edu', '555-1304', '12th', None),
+    ]
+    
+    # Insert all students
+    all_students = ninth_graders + tenth_graders + eleventh_graders + seniors
+    for student in all_students:
+        conn.execute('''
+            INSERT INTO users (username, password, role, first_name, last_name, email, phone, grade, parent_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', student)
+    
+    # GET COACH ID FOR EVENTS
+    coach_id = conn.execute('SELECT id FROM users WHERE role = "coach" LIMIT 1').fetchone()[0]
+    
+    # CREATE AVIATORS PRACTICE SCHEDULE AND EVENTS
+    today = datetime.now()
+    events = [
+        # THIS WEEK'S PRACTICES
+        ('Monday Practice', 'Regular team practice - stunts and tumbling', 'practice', 
+         (today + timedelta(days=1)).strftime('%Y-%m-%d'), '15:30', '17:30', 'Main Gym', coach_id),
+        
+        ('Wednesday Practice', 'Game routine practice', 'practice', 
+         (today + timedelta(days=3)).strftime('%Y-%m-%d'), '15:30', '17:30', 'Main Gym', coach_id),
+        
+        ('Friday Practice', 'Competition prep', 'practice', 
+         (today + timedelta(days=5)).strftime('%Y-%m-%d'), '15:30', '17:30', 'Main Gym', coach_id),
+        
+        # UPCOMING EVENTS
+        ('Team Meeting', 'Monthly team meeting and announcements', 'meeting', 
+         (today + timedelta(days=7)).strftime('%Y-%m-%d'), '16:00', '17:00', 'Conference Room', coach_id),
+        
+        ('Home Football Game', 'Halftime performance vs Eagles', 'performance', 
+         (today + timedelta(days=10)).strftime('%Y-%m-%d'), '18:00', '21:00', 'Aviators Stadium', coach_id),
+        
+        ('Regional Competition', 'Regional cheerleading competition', 'competition', 
+         (today + timedelta(days=21)).strftime('%Y-%m-%d'), '08:00', '18:00', 'Regional Sports Center', coach_id),
+        
+        ('Homecoming Performance', 'Homecoming halftime show', 'performance', 
+         (today + timedelta(days=28)).strftime('%Y-%m-%d'), '19:00', '22:00', 'Aviators Stadium', coach_id),
+        
+        ('Car Wash Fundraiser', 'Team fundraising event', 'fundraiser', 
+         (today + timedelta(days=35)).strftime('%Y-%m-%d'), '09:00', '15:00', 'School Parking Lot', coach_id),
+    ]
+    
+    for event in events:
+        conn.execute('''
+            INSERT INTO events (title, description, event_type, date, start_time, end_time, location, created_by)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ''', event)
+    
+    # ADD SAMPLE PARENTS (OPTIONAL)
+    # Get some student IDs for parent relationships
+    sample_students = conn.execute('SELECT id, first_name, last_name FROM users WHERE role = "student" LIMIT 3').fetchall()
+    
+    sample_parents = [
+        ('parent.smith', hash_password('Aviators2024!'), 'parent', 'Robert', 'Smith', 'robert.smith@email.com', '555-2001', None, sample_students[0][0]),
+        ('parent.johnson', hash_password('Aviators2024!'), 'parent', 'Maria', 'Johnson', 'maria.johnson@email.com', '555-2002', None, sample_students[1][0]),
+        ('parent.williams', hash_password('Aviators2024!'), 'parent', 'David', 'Williams', 'david.williams@email.com', '555-2003', None, sample_students[2][0]),
+    ]
+    
+    for parent in sample_parents:
+        conn.execute('''
+            INSERT INTO users (username, password, role, first_name, last_name, email, phone, grade, parent_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', parent)
+    
+    # CREATE SAMPLE ACADEMIC REQUIREMENTS
+    student_ids = [row[0] for row in conn.execute('SELECT id FROM users WHERE role = "student" LIMIT 5').fetchall()]
+    
+    for student_id in student_ids:
+        requirements = [
+            (student_id, 'Mathematics', 80.0, None, 'Fall 2024', (today + timedelta(days=30)).strftime('%Y-%m-%d'), 'pending', 'Grade pending', coach_id),
+            (student_id, 'English', 75.0, None, 'Fall 2024', (today + timedelta(days=30)).strftime('%Y-%m-%d'), 'pending', 'Grade pending', coach_id),
+            (student_id, 'History', 75.0, None, 'Fall 2024', (today + timedelta(days=30)).strftime('%Y-%m-%d'), 'pending', 'Grade pending', coach_id),
+        ]
+        
+        for req in requirements:
+            conn.execute('''
+                INSERT INTO academic_requirements 
+                (student_id, subject, grade_required, current_grade, semester, due_date, status, notes, created_by)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', req)
     
     conn.commit()
     conn.close()
-    print("Aviators demo users created successfully!")
+    print("✅ Aviators Cheerleading Team data created successfully!")
+    print("\n🏆 AVIATORS LOGIN CREDENTIALS:")
+    print("="*50)
+    print("COACHES:")
+    print("Coach Y. Llevada: coach.llevada / Aviators2025!")
+    print("Coach Kat Atherly: coach.atherly / Aviators2025!")
+    print("\nSTUDENTS:")
+    print("All students: firstname.lastname / Aviators2025!")
+    print("Example: emma.smith / Aviators2025!")
+    print("\nPARENTS:")
+    print("Parents: parent.lastname / Aviators2025!")
+    print("Example: parent.smith / Aviators2025!")
+    print("="*50)
 
 if __name__ == '__main__':
-    create_demo_data()
+    create_aviators_data()
