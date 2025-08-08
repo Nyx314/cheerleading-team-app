@@ -827,7 +827,7 @@ async function deleteRequirement(reqId) {
 }
 
 async function getStudents() {
-    return apiRequest('/api/students');
+    return apiRequest('/api/users/students');  // NOT /api/students
 }
 
 async function updateStudentGrade(studentId, requirementId, grade) {
