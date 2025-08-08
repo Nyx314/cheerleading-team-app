@@ -12,7 +12,72 @@ def create_aviators_data():
     
     conn = sqlite3.connect('database/app.db')
     
-    # Clear existing data
+    # CREATE ALL TABLES FIRST
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
+            role TEXT NOT NULL,
+            first_name TEXT NOT NULL,
+            last_name TEXT NOT NULL,
+            email TEXT,
+            phone TEXT,
+            grade TEXT,
+            parent_id INTEGER,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (parent_id) REFERENCES users (id)
+        )
+    ''')
+    
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS events (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            description TEXT,
+            event_type TEXT NOT NULL,
+            date DATE NOT NULL,
+            start_time TIME NOT NULL,
+            end_time TIME,
+            location TEXT,
+            created_by INTEGER,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (created_by) REFERENCES users (id)
+        )
+    ''')
+    
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS attendance (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            event_id INTEGER NOT NULL,
+            sign_in_time TIMESTAMP,
+            sign_out_time TIMESTAMP,
+            status TEXT DEFAULT 'signed_in',
+            FOREIGN KEY (user_id) REFERENCES users (id),
+            FOREIGN KEY (event_id) REFERENCES events (id)
+        )
+    ''')
+    
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS academic_requirements (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            student_id INTEGER NOT NULL,
+            subject TEXT NOT NULL,
+            grade_required REAL NOT NULL,
+            current_grade REAL,
+            semester TEXT NOT NULL,
+            due_date DATE,
+            status TEXT DEFAULT 'pending',
+            notes TEXT,
+            created_by INTEGER,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (student_id) REFERENCES users (id),
+            FOREIGN KEY (created_by) REFERENCES users (id)
+        )
+    ''')
+    
+    # NOW CLEAR EXISTING DATA (tables exist now)
     conn.execute('DELETE FROM attendance')
     conn.execute('DELETE FROM academic_requirements')
     conn.execute('DELETE FROM events')
@@ -21,7 +86,7 @@ def create_aviators_data():
     # AVIATORS COACHING STAFF
     coaches_staff = [
         # Format: (username, password, role, first_name, last_name, email, phone, grade, parent_id)
-        ('coach.llevada', hash_password('Aviators2025!'), 'coach', 'Y', 'Llevada', 'y.llevada@aviators.edu', '786-267-2707', None, None),
+        ('coach.llevada', hash_password('Aviators2025!'), 'coach', 'Y', 'Llevada', 'y.llevada@aviators.edu', '555-0101', None, None),
         ('coach.atherly', hash_password('Aviators2025!'), 'coach', 'Kat', 'Atherly', 'k.atherly@aviators.edu', '555-0102', None, None),
     ]
     
@@ -32,7 +97,7 @@ def create_aviators_data():
         ''', user)
     
     # AVIATORS CHEERLEADING TEAM BY GRADE
-    # Replace these with your actual team members - organized by grade
+    # Temporary students for testing - replace after tryouts
     
     # 9TH GRADE CHEERLEADERS
     ninth_graders = [
@@ -40,8 +105,6 @@ def create_aviators_data():
         ('emma.smith', hash_password('Aviators2025!'), 'student', 'Emma', 'Smith', 'emma.smith@student.aviators.edu', '555-1001', '9th', None),
         ('sophia.johnson', hash_password('Aviators2025!'), 'student', 'Sophia', 'Johnson', 'sophia.johnson@student.aviators.edu', '555-1002', '9th', None),
         ('olivia.williams', hash_password('Aviators2025!'), 'student', 'Olivia', 'Williams', 'olivia.williams@student.aviators.edu', '555-1003', '9th', None),
-        # ADD MORE 9TH GRADERS HERE:
-        # ('firstname.lastname', hash_password('Aviators2025!'), 'student', 'FirstName', 'LastName', 'firstname.lastname@student.aviators.edu', '555-1004', '9th', None),
     ]
     
     # 10TH GRADE CHEERLEADERS
@@ -49,8 +112,6 @@ def create_aviators_data():
         ('ava.brown', hash_password('Aviators2025!'), 'student', 'Ava', 'Brown', 'ava.brown@student.aviators.edu', '555-1101', '10th', None),
         ('isabella.davis', hash_password('Aviators2025!'), 'student', 'Isabella', 'Davis', 'isabella.davis@student.aviators.edu', '555-1102', '10th', None),
         ('mia.miller', hash_password('Aviators2025!'), 'student', 'Mia', 'Miller', 'mia.miller@student.aviators.edu', '555-1103', '10th', None),
-        # ADD MORE 10TH GRADERS HERE:
-        # ('firstname.lastname', hash_password('Aviators2025!'), 'student', 'FirstName', 'LastName', 'firstname.lastname@student.aviators.edu', '555-1104', '10th', None),
     ]
     
     # 11TH GRADE CHEERLEADERS
@@ -58,8 +119,6 @@ def create_aviators_data():
         ('charlotte.wilson', hash_password('Aviators2025!'), 'student', 'Charlotte', 'Wilson', 'charlotte.wilson@student.aviators.edu', '555-1201', '11th', None),
         ('amelia.moore', hash_password('Aviators2025!'), 'student', 'Amelia', 'Moore', 'amelia.moore@student.aviators.edu', '555-1202', '11th', None),
         ('harper.taylor', hash_password('Aviators2025!'), 'student', 'Harper', 'Taylor', 'harper.taylor@student.aviators.edu', '555-1203', '11th', None),
-        # ADD MORE 11TH GRADERS HERE:
-        # ('firstname.lastname', hash_password('Aviators2025!'), 'student', 'FirstName', 'LastName', 'firstname.lastname@student.aviators.edu', '555-1204', '11th', None),
     ]
     
     # 12TH GRADE CHEERLEADERS (SENIORS)
@@ -67,8 +126,6 @@ def create_aviators_data():
         ('evelyn.anderson', hash_password('Aviators2025!'), 'student', 'Evelyn', 'Anderson', 'evelyn.anderson@student.aviators.edu', '555-1301', '12th', None),
         ('abigail.thomas', hash_password('Aviators2025!'), 'student', 'Abigail', 'Thomas', 'abigail.thomas@student.aviators.edu', '555-1302', '12th', None),
         ('emily.jackson', hash_password('Aviators2025!'), 'student', 'Emily', 'Jackson', 'emily.jackson@student.aviators.edu', '555-1303', '12th', None),
-        # ADD MORE SENIORS HERE:
-        # ('firstname.lastname', hash_password('Aviators2025!'), 'student', 'FirstName', 'LastName', 'firstname.lastname@student.aviators.edu', '555-1304', '12th', None),
     ]
     
     # Insert all students
@@ -122,26 +179,27 @@ def create_aviators_data():
     # Get some student IDs for parent relationships
     sample_students = conn.execute('SELECT id, first_name, last_name FROM users WHERE role = "student" LIMIT 3').fetchall()
     
-    sample_parents = [
-        ('parent.smith', hash_password('Aviators2025!'), 'parent', 'Robert', 'Smith', 'robert.smith@email.com', '555-2001', None, sample_students[0][0]),
-        ('parent.johnson', hash_password('Aviators2025!'), 'parent', 'Maria', 'Johnson', 'maria.johnson@email.com', '555-2002', None, sample_students[1][0]),
-        ('parent.williams', hash_password('Aviators2025!'), 'parent', 'David', 'Williams', 'david.williams@email.com', '555-2003', None, sample_students[2][0]),
-    ]
-    
-    for parent in sample_parents:
-        conn.execute('''
-            INSERT INTO users (username, password, role, first_name, last_name, email, phone, grade, parent_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', parent)
+    if sample_students:
+        sample_parents = [
+            ('parent.smith', hash_password('Aviators2025!'), 'parent', 'Robert', 'Smith', 'robert.smith@email.com', '555-2001', None, sample_students[0][0]),
+            ('parent.johnson', hash_password('Aviators2025!'), 'parent', 'Maria', 'Johnson', 'maria.johnson@email.com', '555-2002', None, sample_students[1][0]),
+            ('parent.williams', hash_password('Aviators2025!'), 'parent', 'David', 'Williams', 'david.williams@email.com', '555-2003', None, sample_students[2][0]),
+        ]
+        
+        for parent in sample_parents:
+            conn.execute('''
+                INSERT INTO users (username, password, role, first_name, last_name, email, phone, grade, parent_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', parent)
     
     # CREATE SAMPLE ACADEMIC REQUIREMENTS
     student_ids = [row[0] for row in conn.execute('SELECT id FROM users WHERE role = "student" LIMIT 5').fetchall()]
     
     for student_id in student_ids:
         requirements = [
-            (student_id, 'Mathematics', 80.0, None, 'Fall 2025', (today + timedelta(days=30)).strftime('%Y-%m-%d'), 'pending', 'Grade pending', coach_id),
-            (student_id, 'English', 75.0, None, 'Fall 2025', (today + timedelta(days=30)).strftime('%Y-%m-%d'), 'pending', 'Grade pending', coach_id),
-            (student_id, 'History', 75.0, None, 'Fall 2025', (today + timedelta(days=30)).strftime('%Y-%m-%d'), 'pending', 'Grade pending', coach_id),
+            (student_id, 'Mathematics', 80.0, None, 'Fall 2024', (today + timedelta(days=30)).strftime('%Y-%m-%d'), 'pending', 'Grade pending', coach_id),
+            (student_id, 'English', 75.0, None, 'Fall 2024', (today + timedelta(days=30)).strftime('%Y-%m-%d'), 'pending', 'Grade pending', coach_id),
+            (student_id, 'History', 75.0, None, 'Fall 2024', (today + timedelta(days=30)).strftime('%Y-%m-%d'), 'pending', 'Grade pending', coach_id),
         ]
         
         for req in requirements:
@@ -159,7 +217,7 @@ def create_aviators_data():
     print("COACHES:")
     print("Coach Y. Llevada: coach.llevada / Aviators2025!")
     print("Coach Kat Atherly: coach.atherly / Aviators2025!")
-    print("\nSTUDENTS:")
+    print("\nTEST STUDENTS (Replace after tryouts):")
     print("All students: firstname.lastname / Aviators2025!")
     print("Example: emma.smith / Aviators2025!")
     print("\nPARENTS:")
