@@ -25,22 +25,23 @@ def init_db():
     conn = get_db()
     
     # Users table
-    conn.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL,
-            role TEXT NOT NULL,
-            first_name TEXT NOT NULL,
-            last_name TEXT NOT NULL,
-            email TEXT,
-            phone TEXT,
-            grade INTEGER,
-            parent_id INTEGER,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (parent_id) REFERENCES users (id)
-        )
-    ''')
+conn.execute('''
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        role TEXT NOT NULL,
+        first_name TEXT NOT NULL,
+        last_name TEXT NOT NULL,
+        email TEXT,
+        phone TEXT,
+        grade INTEGER,
+        parent_id INTEGER,
+        status TEXT DEFAULT 'pending',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (parent_id) REFERENCES users (id)
+    )
+''')
     
     # Events table - UPDATED with is_mandatory field
     conn.execute('''
@@ -134,6 +135,70 @@ def login():
         })
     
     return jsonify({'error': 'Invalid credentials'}), 401
+    return jsonify({'error': 'Invalid credentials'}), 401
+
+# ============ ADD THIS ENTIRE REGISTRATION SECTION ============
+@app.route('/api/auth/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    
+    # Validate team code
+    TEAM_CODE = "AVIATORS2025"  # Your team's registration code
+    if data.get('team_code') != TEAM_CODE:
+        return jsonify({'error': 'Invalid team code'}), 400
+    
+    # Validate required fields
+    required = ['username', 'password', 'role', 'first_name', 'last_name', 'email']
+    for field in required:
+        if not data.get(field):
+            return jsonify({'error': f'{field} is required'}), 400
+    
+    # Only allow student and parent registration
+    if data['role'] not in ['student', 'parent']:
+        return jsonify({'error': 'Invalid role'}), 400
+    
+    conn = get_db()
+    
+    try:
+        # Check if username already exists
+        existing = conn.execute('SELECT id FROM users WHERE username = ?', 
+                               (data['username'],)).fetchone()
+        if existing:
+            conn.close()
+            return jsonify({'error': 'Username already taken'}), 400
+        
+        # Create pending user
+        conn.execute('''
+            INSERT INTO users (username, password, role, first_name, last_name, 
+                             email, phone, grade, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+        ''', (
+            data['username'],
+            hash_password(data['password']),
+            data['role'],
+            data['first_name'],
+            data['last_name'],
+            data['email'],
+            data.get('phone', ''),
+            data.get('grade') if data['role'] == 'student' else None
+        ))
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Registration request submitted! Please wait for coach approval.'
+        }), 201
+        
+    except Exception as e:
+        conn.close()
+        return jsonify({'error': str(e)}), 400
+# ============ END OF REGISTRATION ROUTE ============
+
+@app.route('/api/auth/logout', methods=['POST'])
+def logout():
+    session.clear()
+    return jsonify({'success': True})
 
 @app.route('/api/auth/logout', methods=['POST'])
 def logout():
@@ -473,6 +538,54 @@ def get_academic_alerts():
 
 # User management routes - Get students
 @app.route('/api/users/students', methods=['GET'])
+# Get pending users (for coaches)
+@app.route('/api/users/pending', methods=['GET'])
+def get_pending_users():
+    if 'user_id' not in session:
+        return jsonify({'error': 'Not authenticated'}), 401
+    
+    if session['role'] not in ['coach', 'assistant_coach', 'athletic_director']:
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    conn = get_db()
+    pending = conn.execute('''
+        SELECT id, username, role, first_name, last_name, email, created_at
+        FROM users 
+        WHERE status = 'pending'
+        ORDER BY created_at DESC
+    ''').fetchall()
+    conn.close()
+    
+    return jsonify([dict(user) for user in pending])
+
+# Approve or reject user
+@app.route('/api/users/<int:user_id>/approve', methods=['POST'])
+def approve_user(user_id):
+    if 'user_id' not in session:
+        return jsonify({'error': 'Not authenticated'}), 401
+    
+    if session['role'] not in ['coach', 'assistant_coach', 'athletic_director']:
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    data = request.get_json()
+    action = data.get('action')  # 'approve' or 'reject'
+    
+    if action not in ['approve', 'reject']:
+        return jsonify({'error': 'Invalid action'}), 400
+    
+    conn = get_db()
+    
+    if action == 'approve':
+        conn.execute("UPDATE users SET status = 'active' WHERE id = ?", (user_id,))
+        message = 'User approved'
+    else:
+        conn.execute("DELETE FROM users WHERE id = ? AND status = 'pending'", (user_id,))
+        message = 'User rejected and removed'
+    
+    conn.commit()
+    conn.close()
+    
+    return jsonify({'success': True, 'message': message})
 def get_students():
     if 'user_id' not in session:
         return jsonify({'error': 'Not authenticated'}), 401
