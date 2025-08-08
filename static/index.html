@@ -1295,7 +1295,7 @@ async function updateStudentGrade(studentId, requirementId, grade) {
        async function loadDashboardData() {
     try {
         if (currentUser.role === 'student') {
-            currentEvents = await getTodayEvents();
+            currentEvents = await getAllEvents();
         } else if (currentUser.role === 'parent') {
             currentEvents = await getAllEvents();
         } else {
