@@ -24,26 +24,26 @@ def init_db():
     os.makedirs('database', exist_ok=True)
     conn = get_db()
     
-    # Users table
-conn.execute('''
-    CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL,
-        role TEXT NOT NULL,
-        first_name TEXT NOT NULL,
-        last_name TEXT NOT NULL,
-        email TEXT,
-        phone TEXT,
-        grade INTEGER,
-        parent_id INTEGER,
-        status TEXT DEFAULT 'pending',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (parent_id) REFERENCES users (id)
-    )
-''')
+    # Users table with status field for approval system
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
+            role TEXT NOT NULL,
+            first_name TEXT NOT NULL,
+            last_name TEXT NOT NULL,
+            email TEXT,
+            phone TEXT,
+            grade INTEGER,
+            parent_id INTEGER,
+            status TEXT DEFAULT 'active',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (parent_id) REFERENCES users (id)
+        )
+    ''')
     
-    # Events table - UPDATED with is_mandatory field
+    # Events table with is_mandatory field
     conn.execute('''
         CREATE TABLE IF NOT EXISTS events (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -75,7 +75,7 @@ conn.execute('''
         )
     ''')
     
-    # Academic requirements table - SIMPLIFIED
+    # Academic requirements table
     conn.execute('''
         CREATE TABLE IF NOT EXISTS academic_requirements (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -87,7 +87,7 @@ conn.execute('''
         )
     ''')
     
-    # Student grades table - NEW
+    # Student grades table
     conn.execute('''
         CREATE TABLE IF NOT EXISTS student_grades (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -121,6 +121,11 @@ def login():
     conn.close()
     
     if user and user['password'] == hash_password(password):
+        # Check if user is approved (not pending)
+        user_dict = dict(user)
+        if user_dict.get('status') == 'pending':
+            return jsonify({'error': 'Your account is pending approval. Please wait for coach approval.'}), 403
+        
         session['user_id'] = user['id']
         session['role'] = user['role']
         return jsonify({
@@ -135,9 +140,8 @@ def login():
         })
     
     return jsonify({'error': 'Invalid credentials'}), 401
-    return jsonify({'error': 'Invalid credentials'}), 401
 
-# ============ ADD THIS ENTIRE REGISTRATION SECTION ============
+# Registration route
 @app.route('/api/auth/register', methods=['POST'])
 def register():
     data = request.get_json()
@@ -193,12 +197,6 @@ def register():
     except Exception as e:
         conn.close()
         return jsonify({'error': str(e)}), 400
-# ============ END OF REGISTRATION ROUTE ============
-
-@app.route('/api/auth/logout', methods=['POST'])
-def logout():
-    session.clear()
-    return jsonify({'success': True})
 
 @app.route('/api/auth/logout', methods=['POST'])
 def logout():
@@ -246,7 +244,7 @@ def get_events():
     
     return jsonify([dict(event) for event in events])
 
-# Events routes - CREATE event (UPDATED)
+# Events routes - CREATE event
 @app.route('/api/events', methods=['POST'])
 def create_event():
     if 'user_id' not in session:
@@ -281,7 +279,6 @@ def create_event():
     conn.commit()
     event_id = cursor.lastrowid
     
-    # Get the created event
     event = conn.execute('SELECT * FROM events WHERE id = ?', (event_id,)).fetchone()
     conn.close()
     
@@ -299,7 +296,6 @@ def update_event(event_id):
     data = request.get_json()
     conn = get_db()
     
-    # Build update query dynamically
     update_fields = []
     values = []
     
@@ -344,9 +340,7 @@ def delete_event(event_id):
     conn = get_db()
     
     try:
-        # Delete related attendance records first
         conn.execute('DELETE FROM attendance WHERE event_id = ?', (event_id,))
-        # Delete the event
         conn.execute('DELETE FROM events WHERE id = ?', (event_id,))
         conn.commit()
         conn.close()
@@ -388,7 +382,6 @@ def sign_in():
     
     conn = get_db()
     
-    # Check if already signed in
     existing = conn.execute('''
         SELECT * FROM attendance 
         WHERE user_id = ? AND event_id = ? AND sign_out_time IS NULL
@@ -398,7 +391,6 @@ def sign_in():
         conn.close()
         return jsonify({'error': 'Already signed in'}), 400
     
-    # Sign in
     conn.execute('''
         INSERT INTO attendance (user_id, event_id, sign_in_time, status)
         VALUES (?, ?, ?, 'signed_in')
@@ -496,9 +488,7 @@ def delete_requirement(req_id):
     conn = get_db()
     
     try:
-        # Delete related student grades first
         conn.execute('DELETE FROM student_grades WHERE requirement_id = ?', (req_id,))
-        # Delete the requirement
         conn.execute('DELETE FROM academic_requirements WHERE id = ?', (req_id,))
         conn.commit()
         conn.close()
@@ -517,7 +507,6 @@ def get_academic_alerts():
     
     conn = get_db()
     
-    # Get students with grades below requirements
     alerts = conn.execute('''
         SELECT 
             u.first_name, 
@@ -538,6 +527,21 @@ def get_academic_alerts():
 
 # User management routes - Get students
 @app.route('/api/users/students', methods=['GET'])
+def get_students():
+    if 'user_id' not in session:
+        return jsonify({'error': 'Not authenticated'}), 401
+    
+    conn = get_db()
+    students = conn.execute('''
+        SELECT id, username, first_name, last_name, email, phone, grade
+        FROM users 
+        WHERE role = 'student' AND (status = 'active' OR status IS NULL)
+        ORDER BY last_name, first_name
+    ''').fetchall()
+    conn.close()
+    
+    return jsonify([dict(student) for student in students])
+
 # Get pending users (for coaches)
 @app.route('/api/users/pending', methods=['GET'])
 def get_pending_users():
@@ -586,20 +590,6 @@ def approve_user(user_id):
     conn.close()
     
     return jsonify({'success': True, 'message': message})
-def get_students():
-    if 'user_id' not in session:
-        return jsonify({'error': 'Not authenticated'}), 401
-    
-    conn = get_db()
-    students = conn.execute('''
-        SELECT id, username, first_name, last_name, email, phone, grade
-        FROM users 
-        WHERE role = 'student'
-        ORDER BY last_name, first_name
-    ''').fetchall()
-    conn.close()
-    
-    return jsonify([dict(student) for student in students])
 
 # Update student grades
 @app.route('/api/students/<int:student_id>/grades', methods=['POST'])
@@ -618,21 +608,18 @@ def update_student_grade(student_id):
     conn = get_db()
     
     try:
-        # Check if grade entry exists
         existing = conn.execute('''
             SELECT id FROM student_grades 
             WHERE student_id = ? AND requirement_id = ?
         ''', (student_id, data['requirement_id'])).fetchone()
         
         if existing:
-            # Update existing grade
             conn.execute('''
                 UPDATE student_grades 
                 SET current_grade = ?, last_updated = ?
                 WHERE student_id = ? AND requirement_id = ?
             ''', (data['grade'], datetime.now(), student_id, data['requirement_id']))
         else:
-            # Insert new grade
             conn.execute('''
                 INSERT INTO student_grades (student_id, requirement_id, current_grade, last_updated)
                 VALUES (?, ?, ?, ?)
@@ -663,4 +650,3 @@ def serve_static_files(path):
 if __name__ == '__main__':
     init_db()
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=False)
-    
