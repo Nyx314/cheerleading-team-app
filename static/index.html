@@ -548,56 +548,58 @@
             return apiRequest('/api/academics/alerts');
         }
         
-        // Render functions
-        function renderLogin() {
-            return `
-                <div class="gradient-bg">
-                    <div class="login-card">
-                        <div class="login-header">
-                            <h1 class="login-title">🏆 Aviators</h1>
-                            <p class="login-subtitle">Cheerleading Team Portal</p>
-                        </div>
-                        
-                        <form id="loginForm">
-                            <div class="form-group">
-                                <label class="form-label">Username</label>
-                                <input type="text" id="username" class="form-input" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label class="form-label">Password</label>
-                                <input type="password" id="password" class="form-input" required>
-                            </div>
-                            
-                            <div id="errorMessage"></div>
-                            
-                            <button type="submit" class="btn-primary" id="loginBtn">
-                                Sign In
-                            </button>
-                        </form>
-                        
-                        <div class="demo-section">
-                            <h3 class="demo-title">Demo Accounts:</h3>
-                            <div class="demo-accounts">
-                                <button class="demo-btn" onclick="fillDemo('coach', 'password123')">
-                                    <span class="demo-role">Coach</span>
-                                    <span class="demo-username">(coach)</span>
-                                </button>
-                                <button class="demo-btn" onclick="fillDemo('student1', 'password123')">
-                                    <span class="demo-role">Student (Emma)</span>
-                                    <span class="demo-username">(student1)</span>
-                                </button>
-                                <button class="demo-btn" onclick="fillDemo('parent1', 'password123')">
-                                    <span class="demo-role">Parent (John)</span>
-                                    <span class="demo-username">(parent1)</span>
-                                </button>
-                        
-                            </div>
-                        </div>
+       function renderLogin() {
+    return `
+        <div class="gradient-bg">
+            <div class="login-card">
+                <div class="login-header">
+                    <h1 class="login-title">🏆 Aviators Cheerleading</h1>
+                    <p class="login-subtitle">Team Management Portal</p>
+                </div>
+                
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label class="form-label">Username</label>
+                        <input type="text" id="username" class="form-input" required placeholder="firstname.lastname">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input type="password" id="password" class="form-input" required placeholder="Aviators2025!">
+                    </div>
+                    
+                    <div id="errorMessage"></div>
+                    
+                    <button type="submit" class="btn-primary" id="loginBtn">
+                        Sign In
+                    </button>
+                </form>
+                
+                <div class="demo-section">
+                    <h3 class="demo-title">Test Accounts (Before Tryouts):</h3>
+                    <div class="demo-accounts">
+                        <button class="demo-btn" onclick="fillDemo('coach.llevada', 'Aviators2025!')">
+                            <span class="demo-role">Coach Y. Llevada</span>
+                            <span class="demo-username">(coach.llevada)</span>
+                        </button>
+                        <button class="demo-btn" onclick="fillDemo('coach.atherly', 'Aviators2025!')">
+                            <span class="demo-role">Coach Kat Atherly</span>
+                            <span class="demo-username">(coach.atherly)</span>
+                        </button>
+                        <button class="demo-btn" onclick="fillDemo('emma.smith', 'Aviators2025!')">
+                            <span class="demo-role">Test Student (Emma)</span>
+                            <span class="demo-username">(emma.smith)</span>
+                        </button>
+                        <button class="demo-btn" onclick="fillDemo('parent.smith', 'Aviators2025!')">
+                            <span class="demo-role">Test Parent</span>
+                            <span class="demo-username">(parent.smith)</span>
+                        </button>
                     </div>
                 </div>
-            `;
-        }
+            </div>
+        </div>
+    `;
+}
         
         function renderNavbar() {
             const roleDisplay = currentUser.role.replace('_', ' ').toUpperCase();
@@ -927,7 +929,11 @@
             await checkAuth();
             render();
         }
-        
+          // Event handlers
+        function fillDemo(username, password) {
+            document.getElementById('username').value = username;
+            document.getElementById('password').value = password;
+        }
         // Start the app
         init();
     </script>
