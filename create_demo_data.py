@@ -21,8 +21,8 @@ def create_aviators_data():
     # AVIATORS COACHING STAFF
     coaches_staff = [
         # Format: (username, password, role, first_name, last_name, email, phone, grade, parent_id)
-        ('coach.llevada', hash_password('Aviators2024!'), 'coach', 'Y', 'Llevada', 'y.llevada@aviators.edu', '555-0101', None, None),
-        ('coach.atherly', hash_password('Aviators2024!'), 'coach', 'Kat', 'Atherly', 'k.atherly@aviators.edu', '555-0102', None, None),
+        ('coach.llevada', hash_password('Aviators2025!'), 'coach', 'Y', 'Llevada', 'y.llevada@aviators.edu', '786-267-2707', None, None),
+        ('coach.atherly', hash_password('Aviators2025!'), 'coach', 'Kat', 'Atherly', 'k.atherly@aviators.edu', '555-0102', None, None),
     ]
     
     for user in coaches_staff:
@@ -37,38 +37,38 @@ def create_aviators_data():
     # 9TH GRADE CHEERLEADERS
     ninth_graders = [
         # Format: (username, password, role, first_name, last_name, email, phone, grade, parent_id)
-        ('emma.smith', hash_password('Aviators2024!'), 'student', 'Emma', 'Smith', 'emma.smith@student.aviators.edu', '555-1001', '9th', None),
-        ('sophia.johnson', hash_password('Aviators2024!'), 'student', 'Sophia', 'Johnson', 'sophia.johnson@student.aviators.edu', '555-1002', '9th', None),
-        ('olivia.williams', hash_password('Aviators2024!'), 'student', 'Olivia', 'Williams', 'olivia.williams@student.aviators.edu', '555-1003', '9th', None),
+        ('emma.smith', hash_password('Aviators2025!'), 'student', 'Emma', 'Smith', 'emma.smith@student.aviators.edu', '555-1001', '9th', None),
+        ('sophia.johnson', hash_password('Aviators2025!'), 'student', 'Sophia', 'Johnson', 'sophia.johnson@student.aviators.edu', '555-1002', '9th', None),
+        ('olivia.williams', hash_password('Aviators2025!'), 'student', 'Olivia', 'Williams', 'olivia.williams@student.aviators.edu', '555-1003', '9th', None),
         # ADD MORE 9TH GRADERS HERE:
-        # ('firstname.lastname', hash_password('Aviators2024!'), 'student', 'FirstName', 'LastName', 'firstname.lastname@student.aviators.edu', '555-1004', '9th', None),
+        # ('firstname.lastname', hash_password('Aviators2025!'), 'student', 'FirstName', 'LastName', 'firstname.lastname@student.aviators.edu', '555-1004', '9th', None),
     ]
     
     # 10TH GRADE CHEERLEADERS
     tenth_graders = [
-        ('ava.brown', hash_password('Aviators2024!'), 'student', 'Ava', 'Brown', 'ava.brown@student.aviators.edu', '555-1101', '10th', None),
-        ('isabella.davis', hash_password('Aviators2024!'), 'student', 'Isabella', 'Davis', 'isabella.davis@student.aviators.edu', '555-1102', '10th', None),
-        ('mia.miller', hash_password('Aviators2024!'), 'student', 'Mia', 'Miller', 'mia.miller@student.aviators.edu', '555-1103', '10th', None),
+        ('ava.brown', hash_password('Aviators2025!'), 'student', 'Ava', 'Brown', 'ava.brown@student.aviators.edu', '555-1101', '10th', None),
+        ('isabella.davis', hash_password('Aviators2025!'), 'student', 'Isabella', 'Davis', 'isabella.davis@student.aviators.edu', '555-1102', '10th', None),
+        ('mia.miller', hash_password('Aviators2025!'), 'student', 'Mia', 'Miller', 'mia.miller@student.aviators.edu', '555-1103', '10th', None),
         # ADD MORE 10TH GRADERS HERE:
-        # ('firstname.lastname', hash_password('Aviators2024!'), 'student', 'FirstName', 'LastName', 'firstname.lastname@student.aviators.edu', '555-1104', '10th', None),
+        # ('firstname.lastname', hash_password('Aviators2025!'), 'student', 'FirstName', 'LastName', 'firstname.lastname@student.aviators.edu', '555-1104', '10th', None),
     ]
     
     # 11TH GRADE CHEERLEADERS
     eleventh_graders = [
-        ('charlotte.wilson', hash_password('Aviators2024!'), 'student', 'Charlotte', 'Wilson', 'charlotte.wilson@student.aviators.edu', '555-1201', '11th', None),
-        ('amelia.moore', hash_password('Aviators2024!'), 'student', 'Amelia', 'Moore', 'amelia.moore@student.aviators.edu', '555-1202', '11th', None),
-        ('harper.taylor', hash_password('Aviators2024!'), 'student', 'Harper', 'Taylor', 'harper.taylor@student.aviators.edu', '555-1203', '11th', None),
+        ('charlotte.wilson', hash_password('Aviators2025!'), 'student', 'Charlotte', 'Wilson', 'charlotte.wilson@student.aviators.edu', '555-1201', '11th', None),
+        ('amelia.moore', hash_password('Aviators2025!'), 'student', 'Amelia', 'Moore', 'amelia.moore@student.aviators.edu', '555-1202', '11th', None),
+        ('harper.taylor', hash_password('Aviators2025!'), 'student', 'Harper', 'Taylor', 'harper.taylor@student.aviators.edu', '555-1203', '11th', None),
         # ADD MORE 11TH GRADERS HERE:
-        # ('firstname.lastname', hash_password('Aviators2024!'), 'student', 'FirstName', 'LastName', 'firstname.lastname@student.aviators.edu', '555-1204', '11th', None),
+        # ('firstname.lastname', hash_password('Aviators2025!'), 'student', 'FirstName', 'LastName', 'firstname.lastname@student.aviators.edu', '555-1204', '11th', None),
     ]
     
     # 12TH GRADE CHEERLEADERS (SENIORS)
     seniors = [
-        ('evelyn.anderson', hash_password('Aviators2024!'), 'student', 'Evelyn', 'Anderson', 'evelyn.anderson@student.aviators.edu', '555-1301', '12th', None),
-        ('abigail.thomas', hash_password('Aviators2024!'), 'student', 'Abigail', 'Thomas', 'abigail.thomas@student.aviators.edu', '555-1302', '12th', None),
-        ('emily.jackson', hash_password('Aviators2024!'), 'student', 'Emily', 'Jackson', 'emily.jackson@student.aviators.edu', '555-1303', '12th', None),
+        ('evelyn.anderson', hash_password('Aviators2025!'), 'student', 'Evelyn', 'Anderson', 'evelyn.anderson@student.aviators.edu', '555-1301', '12th', None),
+        ('abigail.thomas', hash_password('Aviators2025!'), 'student', 'Abigail', 'Thomas', 'abigail.thomas@student.aviators.edu', '555-1302', '12th', None),
+        ('emily.jackson', hash_password('Aviators2025!'), 'student', 'Emily', 'Jackson', 'emily.jackson@student.aviators.edu', '555-1303', '12th', None),
         # ADD MORE SENIORS HERE:
-        # ('firstname.lastname', hash_password('Aviators2024!'), 'student', 'FirstName', 'LastName', 'firstname.lastname@student.aviators.edu', '555-1304', '12th', None),
+        # ('firstname.lastname', hash_password('Aviators2025!'), 'student', 'FirstName', 'LastName', 'firstname.lastname@student.aviators.edu', '555-1304', '12th', None),
     ]
     
     # Insert all students
@@ -123,9 +123,9 @@ def create_aviators_data():
     sample_students = conn.execute('SELECT id, first_name, last_name FROM users WHERE role = "student" LIMIT 3').fetchall()
     
     sample_parents = [
-        ('parent.smith', hash_password('Aviators2024!'), 'parent', 'Robert', 'Smith', 'robert.smith@email.com', '555-2001', None, sample_students[0][0]),
-        ('parent.johnson', hash_password('Aviators2024!'), 'parent', 'Maria', 'Johnson', 'maria.johnson@email.com', '555-2002', None, sample_students[1][0]),
-        ('parent.williams', hash_password('Aviators2024!'), 'parent', 'David', 'Williams', 'david.williams@email.com', '555-2003', None, sample_students[2][0]),
+        ('parent.smith', hash_password('Aviators2025!'), 'parent', 'Robert', 'Smith', 'robert.smith@email.com', '555-2001', None, sample_students[0][0]),
+        ('parent.johnson', hash_password('Aviators2025!'), 'parent', 'Maria', 'Johnson', 'maria.johnson@email.com', '555-2002', None, sample_students[1][0]),
+        ('parent.williams', hash_password('Aviators2025!'), 'parent', 'David', 'Williams', 'david.williams@email.com', '555-2003', None, sample_students[2][0]),
     ]
     
     for parent in sample_parents:
@@ -139,9 +139,9 @@ def create_aviators_data():
     
     for student_id in student_ids:
         requirements = [
-            (student_id, 'Mathematics', 80.0, None, 'Fall 2024', (today + timedelta(days=30)).strftime('%Y-%m-%d'), 'pending', 'Grade pending', coach_id),
-            (student_id, 'English', 75.0, None, 'Fall 2024', (today + timedelta(days=30)).strftime('%Y-%m-%d'), 'pending', 'Grade pending', coach_id),
-            (student_id, 'History', 75.0, None, 'Fall 2024', (today + timedelta(days=30)).strftime('%Y-%m-%d'), 'pending', 'Grade pending', coach_id),
+            (student_id, 'Mathematics', 80.0, None, 'Fall 2025', (today + timedelta(days=30)).strftime('%Y-%m-%d'), 'pending', 'Grade pending', coach_id),
+            (student_id, 'English', 75.0, None, 'Fall 2025', (today + timedelta(days=30)).strftime('%Y-%m-%d'), 'pending', 'Grade pending', coach_id),
+            (student_id, 'History', 75.0, None, 'Fall 2025', (today + timedelta(days=30)).strftime('%Y-%m-%d'), 'pending', 'Grade pending', coach_id),
         ]
         
         for req in requirements:
