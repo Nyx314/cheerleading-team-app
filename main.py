@@ -687,3 +687,66 @@ def update_student_grade(student_id):
     except Exception as e:
         db.close()
         return jsonify({'error': str(e)}), 400
+        @app.route('/api/students', methods=['GET'])
+def get_students():
+    if 'user_id' not in session:
+        return jsonify({'error': 'Not authenticated'}), 401
+    
+    if session['role'] not in ['coach', 'assistant_coach', 'athletic_director']:
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    db = get_db()
+    students = db.execute('''
+        SELECT s.*, u.first_name, u.last_name, u.email
+        FROM students s
+        JOIN users u ON s.user_id = u.id
+        ORDER BY u.last_name, u.first_name
+    ''').fetchall()
+    db.close()
+    
+    return jsonify([dict(student) for student in students])
+
+@app.route('/api/students/<int:student_id>/grades', methods=['POST'])
+def update_student_grade(student_id):
+    if 'user_id' not in session:
+        return jsonify({'error': 'Not authenticated'}), 401
+    
+    if session['role'] not in ['coach', 'assistant_coach', 'athletic_director']:
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    data = request.json
+    
+    if not data.get('requirement_id') or data.get('grade') is None:
+        return jsonify({'error': 'requirement_id and grade are required'}), 400
+    
+    db = get_db()
+    
+    try:
+        # Check if grade entry exists
+        existing = db.execute('''
+            SELECT id FROM student_grades 
+            WHERE student_id = ? AND requirement_id = ?
+        ''', (student_id, data['requirement_id'])).fetchone()
+        
+        if existing:
+            # Update existing grade
+            db.execute('''
+                UPDATE student_grades 
+                SET current_grade = ?, last_updated = ?
+                WHERE student_id = ? AND requirement_id = ?
+            ''', (data['grade'], datetime.now(), student_id, data['requirement_id']))
+        else:
+            # Insert new grade
+            db.execute('''
+                INSERT INTO student_grades (student_id, requirement_id, current_grade, last_updated)
+                VALUES (?, ?, ?, ?)
+            ''', (student_id, data['requirement_id'], data['grade'], datetime.now()))
+        
+        db.commit()
+        db.close()
+        
+        return jsonify({'message': 'Grade updated successfully'})
+        
+    except Exception as e:
+        db.close()
+        return jsonify({'error': str(e)}), 400
