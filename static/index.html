@@ -487,6 +487,8 @@
         let currentUser = null;
         let currentEvents = [];
         let currentAlerts = [];
+       let currentRequirements = [];
+let currentStudents = [];
         
         // API helper functions
         async function apiRequest(url, options = {}) {
@@ -548,6 +550,55 @@
         async function getAcademicAlerts() {
             return apiRequest('/api/academics/alerts');
         }
+        // Event functions
+async function createEvent(eventData) {
+    return apiRequest('/api/events', {
+        method: 'POST',
+        body: JSON.stringify(eventData),
+    });
+}
+
+async function updateEvent(eventId, eventData) {
+    return apiRequest(`/api/events/${eventId}`, {
+        method: 'PUT',
+        body: JSON.stringify(eventData),
+    });
+}
+
+async function deleteEvent(eventId) {
+    return apiRequest(`/api/events/${eventId}`, {
+        method: 'DELETE',
+    });
+}
+
+// Academic functions
+async function getRequirements() {
+    return apiRequest('/api/academics/requirements');
+}
+
+async function createRequirement(data) {
+    return apiRequest('/api/academics/requirements', {
+        method: 'POST',
+        body: JSON.stringify(data),
+    });
+}
+
+async function deleteRequirement(reqId) {
+    return apiRequest(`/api/academics/requirements/${reqId}`, {
+        method: 'DELETE',
+    });
+}
+
+async function getStudents() {
+    return apiRequest('/api/students');
+}
+
+async function updateStudentGrade(studentId, requirementId, grade) {
+    return apiRequest(`/api/students/${studentId}/grades`, {
+        method: 'POST',
+        body: JSON.stringify({ requirement_id: requirementId, grade }),
+    });
+}
         
        function renderLogin() {
     return `
@@ -673,77 +724,198 @@
         }
         
         function renderCoachDashboard() {
-            const alertsHtml = currentAlerts.length === 0 
-                ? '<div class="empty-state">No academic alerts at this time</div>'
-                : currentAlerts.map(alert => `
-                    <div class="alert-item">
-                        <div class="alert-title">${alert.first_name} ${alert.last_name} - ${alert.subject}</div>
-                        <div class="alert-text">Current: ${alert.current_grade}% (Required: ${alert.grade_required}%)</div>
+    const alertsHtml = currentAlerts.length === 0 
+        ? '<div class="empty-state">No academic alerts at this time</div>'
+        : currentAlerts.map(alert => `
+            <div class="alert-item">
+                <div class="alert-title">${alert.first_name} ${alert.last_name} - ${alert.subject}</div>
+                <div class="alert-text">Current: ${alert.current_grade}% (Required: ${alert.grade_required}%)</div>
+            </div>
+        `).join('');
+    
+    const eventsHtml = currentEvents.length === 0
+        ? '<div class="empty-state">No events scheduled. Create your first event!</div>'
+        : currentEvents.slice(0, 10).map(event => `
+            <div class="event-item">
+                <div class="event-info">
+                    <h4>${event.title}</h4>
+                    <div class="event-time">${event.date} | ${event.start_time} - ${event.end_time || 'TBD'}</div>
+                    <div class="event-location">${event.location || 'No location set'}</div>
+                    ${event.is_mandatory ? '<span style="color: #e53e3e; font-size: 12px; font-weight: 600;">MANDATORY</span>' : ''}
+                </div>
+                <div class="event-actions">
+                    <button class="btn-edit" onclick="handleEditEvent(${event.id})">Edit</button>
+                    <button class="btn-delete" onclick="handleDeleteEvent(${event.id})">Delete</button>
+                </div>
+            </div>
+        `).join('');
+    
+    return `
+        <div class="main-content">
+            <div class="card">
+                <h2 class="card-title">Coach Dashboard 📊</h2>
+                <p class="card-subtitle">Manage your team and track performance</p>
+                
+                <div class="stats-grid">
+                    <div class="stat-card red">
+                        <div class="stat-title">Academic Alerts</div>
+                        <div class="stat-value">${currentAlerts.length}</div>
                     </div>
-                `).join('');
-            
-            return `
-                <div class="main-content">
-                    <div class="card">
-                        <h2 class="card-title">Coach Dashboard 📊</h2>
-                        <p class="card-subtitle">Manage your team and track performance</p>
-                        
-                        <div class="stats-grid">
-                            <div class="stat-card red">
-                                <div class="stat-title">Academic Alerts</div>
-                                <div class="stat-value">${currentAlerts.length}</div>
-                            </div>
-                            <div class="stat-card blue">
-                                <div class="stat-title">Total Events</div>
-                                <div class="stat-value">${currentEvents.length}</div>
-                            </div>
-                            <div class="stat-card green">
-                                <div class="stat-title">Active Students</div>
-                                <div class="stat-value">5</div>
-                            </div>
-                            <div class="stat-card purple">
-                                <div class="stat-title">This Season</div>
-                                <div class="stat-value">2024</div>
-                            </div>
-                        </div>
-                        
-                        <div style="margin-top: 20px;">
-                            <button class="btn-action" onclick="alert('Create Event feature coming soon!')">
-                                Create Event
-                            </button>
-                            <button class="btn-secondary" onclick="alert('Academic Requirements feature coming soon!')">
-                                Add Academic Requirement
-                            </button>
-                        </div>
+                    <div class="stat-card blue">
+                        <div class="stat-title">Total Events</div>
+                        <div class="stat-value">${currentEvents.length}</div>
                     </div>
-                    
-                    ${currentAlerts.length > 0 ? `
-                    <div class="card">
-                        <h3 class="section-title">⚠️ Academic Alerts</h3>
-                        ${alertsHtml}
+                    <div class="stat-card green">
+                        <div class="stat-title">Active Students</div>
+                        <div class="stat-value">${currentStudents.length}</div>
                     </div>
-                    ` : ''}
-                    
-                    <div class="card">
-                        <h3 class="section-title">Recent Events</h3>
-                        <div class="events-list">
-                            ${currentEvents.slice(0, 5).map(event => `
-                                <div class="event-item">
-                                    <div class="event-info">
-                                        <h4>${event.title}</h4>
-                                        <div class="event-time">${event.date} | ${event.start_time}</div>
-                                        <div class="event-location">${event.location || 'TBD'}</div>
-                                    </div>
-                                    <div style="padding: 8px 12px; background: #ebf8ff; color: #3182ce; border-radius: 4px; font-size: 12px; font-weight: 600;">
-                                        ${event.event_type.toUpperCase()}
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
+                    <div class="stat-card purple">
+                        <div class="stat-title">Requirements</div>
+                        <div class="stat-value">${currentRequirements.length}</div>
                     </div>
                 </div>
-            `;
-        }
+                
+                <div style="margin-top: 20px;">
+                    <button class="btn-action" onclick="showCreateEventModal()">
+                        Create Event
+                    </button>
+                    <button class="btn-secondary" onclick="showRequirementsModal()">
+                        Manage Academic Requirements
+                    </button>
+                    <button class="btn-secondary" onclick="showStudentGradesModal()">
+                        Update Student Grades
+                    </button>
+                </div>
+            </div>
+            
+            ${currentAlerts.length > 0 ? `
+            <div class="card">
+                <h3 class="section-title">⚠️ Academic Alerts</h3>
+                ${alertsHtml}
+            </div>
+            ` : ''}
+            
+            <div class="card">
+                <h3 class="section-title">All Events</h3>
+                <div class="events-list">
+                    ${eventsHtml}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Event Modal -->
+        <div id="eventModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title" id="eventModalTitle">Create Event</h2>
+                </div>
+                <div class="modal-body">
+                    <form id="eventForm">
+                        <div class="form-group">
+                            <label class="form-label">Event Title *</label>
+                            <input type="text" id="eventTitle" class="form-input" required>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Event Type *</label>
+                                <select id="eventType" class="form-select" required>
+                                    <option value="">Select type...</option>
+                                    <option value="practice">Practice</option>
+                                    <option value="competition">Competition</option>
+                                    <option value="performance">Performance</option>
+                                    <option value="meeting">Meeting</option>
+                                    <option value="fundraiser">Fundraiser</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Date *</label>
+                                <input type="date" id="eventDate" class="form-input" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Start Time *</label>
+                                <input type="time" id="eventStartTime" class="form-input" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">End Time</label>
+                                <input type="time" id="eventEndTime" class="form-input">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Location</label>
+                            <input type="text" id="eventLocation" class="form-input" placeholder="e.g., Main Gym, Competition Center">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <textarea id="eventDescription" class="form-textarea" placeholder="Additional details about the event..."></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="eventMandatory" class="form-checkbox">
+                                Mandatory Attendance
+                            </label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-cancel" onclick="closeEventModal()">Cancel</button>
+                    <button class="btn-action" onclick="handleSaveEvent()">Save Event</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Requirements Modal -->
+        <div id="requirementsModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title">Academic Requirements</h2>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <h3 style="margin-bottom: 16px;">Add New Requirement</h3>
+                        <div class="form-row">
+                            <input type="text" id="requirementSubject" class="form-input" placeholder="Subject (e.g., Math, English)">
+                            <input type="number" id="requirementGrade" class="form-input" placeholder="Min Grade %" min="0" max="100" step="0.1">
+                        </div>
+                        <button class="btn-secondary" onclick="handleAddRequirement()" style="margin-top: 12px;">Add Requirement</button>
+                    </div>
+                    
+                    <div style="margin-top: 24px;">
+                        <h3 style="margin-bottom: 16px;">Current Requirements</h3>
+                        <div id="requirementsList" class="requirements-list"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-action" onclick="closeRequirementsModal()">Close</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Student Grades Modal -->
+        <div id="studentGradesModal" class="modal">
+            <div class="modal-content" style="max-width: 800px;">
+                <div class="modal-header">
+                    <h2 class="modal-title">Update Student Grades</h2>
+                </div>
+                <div class="modal-body">
+                    <div id="studentGradesList"></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-action" onclick="closeStudentGradesModal()">Close</button>
+                </div>
+            </div>
+        </div>
+    `;
+}
         
         function renderParentDashboard() {
             return `
@@ -856,19 +1028,20 @@
                 loginBtn.textContent = 'Sign In';
             }
         }
-        
         async function handleLogout() {
-            try {
-                await logout();
-            } catch (error) {
-                console.error('Logout error:', error);
-            } finally {
-                currentUser = null;
-                currentEvents = [];
-                currentAlerts = [];
-                render();
-            }
-        }
+    try {
+        await logout();
+    } catch (error) {
+        console.error('Logout error:', error);
+    } finally {
+        currentUser = null;
+        currentEvents = [];
+        currentAlerts = [];
+        currentRequirements = [];
+        currentStudents = [];
+        render();
+    }
+}
         
         async function handleSignIn(eventId) {
             try {
@@ -882,24 +1055,32 @@
         }
         
         // Data loading functions
-        async function loadDashboardData() {
-            try {
-                if (currentUser.role === 'student') {
-                    currentEvents = await getTodayEvents();
-                } else {
-                    const [events, alerts] = await Promise.all([
-                        getAllEvents(),
-                        getAcademicAlerts().catch(() => [])
-                    ]);
-                    currentEvents = events;
-                    currentAlerts = alerts;
-                }
-            } catch (error) {
-                console.error('Error loading dashboard data:', error);
-                currentEvents = [];
-                currentAlerts = [];
-            }
+       async function loadDashboardData() {
+    try {
+        if (currentUser.role === 'student') {
+            currentEvents = await getTodayEvents();
+        } else if (currentUser.role === 'parent') {
+            currentEvents = await getAllEvents();
+        } else {
+            const [events, alerts, requirements, students] = await Promise.all([
+                getAllEvents(),
+                getAcademicAlerts().catch(() => []),
+                getRequirements().catch(() => []),
+                getStudents().catch(() => [])
+            ]);
+            currentEvents = events;
+            currentAlerts = alerts;
+            currentRequirements = requirements;
+            currentStudents = students;
         }
+    } catch (error) {
+        console.error('Error loading dashboard data:', error);
+        currentEvents = [];
+        currentAlerts = [];
+        currentRequirements = [];
+        currentStudents = [];
+    }
+}
         
         async function checkAuth() {
             try {
@@ -910,6 +1091,251 @@
                 currentUser = null;
             }
         }
+        // Event management handlers
+let editingEventId = null;
+
+function showCreateEventModal() {
+    editingEventId = null;
+    document.getElementById('eventModalTitle').textContent = 'Create Event';
+    document.getElementById('eventForm').reset();
+    document.getElementById('eventModal').classList.add('active');
+}
+
+function handleEditEvent(eventId) {
+    editingEventId = eventId;
+    const event = currentEvents.find(e => e.id === eventId);
+    if (!event) return;
+    
+    document.getElementById('eventModalTitle').textContent = 'Edit Event';
+    document.getElementById('eventTitle').value = event.title;
+    document.getElementById('eventType').value = event.event_type;
+    document.getElementById('eventDate').value = event.date;
+    document.getElementById('eventStartTime').value = event.start_time;
+    document.getElementById('eventEndTime').value = event.end_time || '';
+    document.getElementById('eventLocation').value = event.location || '';
+    document.getElementById('eventDescription').value = event.description || '';
+    document.getElementById('eventMandatory').checked = event.is_mandatory;
+    
+    document.getElementById('eventModal').classList.add('active');
+}
+
+function closeEventModal() {
+    document.getElementById('eventModal').classList.remove('active');
+    editingEventId = null;
+}
+
+async function handleSaveEvent() {
+    const eventData = {
+        title: document.getElementById('eventTitle').value,
+        event_type: document.getElementById('eventType').value,
+        date: document.getElementById('eventDate').value,
+        start_time: document.getElementById('eventStartTime').value,
+        end_time: document.getElementById('eventEndTime').value || null,
+        location: document.getElementById('eventLocation').value || '',
+        description: document.getElementById('eventDescription').value || '',
+        is_mandatory: document.getElementById('eventMandatory').checked
+    };
+    
+    if (!eventData.title || !eventData.event_type || !eventData.date || !eventData.start_time) {
+        alert('Please fill in all required fields');
+        return;
+    }
+    
+    try {
+        if (editingEventId) {
+            await updateEvent(editingEventId, eventData);
+            alert('Event updated successfully!');
+        } else {
+            await createEvent(eventData);
+            alert('Event created successfully!');
+        }
+        
+        closeEventModal();
+        await loadDashboardData();
+        render();
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+}
+
+async function handleDeleteEvent(eventId) {
+    if (!confirm('Are you sure you want to delete this event?')) {
+        return;
+    }
+    
+    try {
+        await deleteEvent(eventId);
+        alert('Event deleted successfully!');
+        await loadDashboardData();
+        render();
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+}
+
+// Academic requirements handlers
+function showRequirementsModal() {
+    document.getElementById('requirementsModal').classList.add('active');
+    renderRequirementsList();
+}
+
+function closeRequirementsModal() {
+    document.getElementById('requirementsModal').classList.remove('active');
+}
+
+function renderRequirementsList() {
+    const container = document.getElementById('requirementsList');
+    if (!container) return;
+    
+    if (currentRequirements.length === 0) {
+        container.innerHTML = '<div class="empty-state">No requirements added yet</div>';
+        return;
+    }
+    
+    container.innerHTML = currentRequirements.map(req => `
+        <div class="requirement-item">
+            <div class="requirement-info">
+                <h4>${req.subject}</h4>
+                <div class="requirement-details">Minimum Grade: ${req.grade_required}%</div>
+                <div class="requirement-details">${req.semester || 'All'} ${req.year || ''}</div>
+            </div>
+            <button class="btn-delete" onclick="handleDeleteRequirement(${req.id})">Delete</button>
+        </div>
+    `).join('');
+}
+
+async function handleAddRequirement() {
+    const subject = document.getElementById('requirementSubject').value;
+    const grade = document.getElementById('requirementGrade').value;
+    
+    if (!subject || !grade) {
+        alert('Please enter both subject and minimum grade');
+        return;
+    }
+    
+    try {
+        await createRequirement({
+            subject: subject,
+            grade_required: parseFloat(grade)
+        });
+        
+        document.getElementById('requirementSubject').value = '';
+        document.getElementById('requirementGrade').value = '';
+        
+        await loadDashboardData();
+        renderRequirementsList();
+        alert('Requirement added successfully!');
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+}
+
+async function handleDeleteRequirement(reqId) {
+    if (!confirm('Are you sure you want to delete this requirement?')) {
+        return;
+    }
+    
+    try {
+        await deleteRequirement(reqId);
+        await loadDashboardData();
+        renderRequirementsList();
+        alert('Requirement deleted successfully!');
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+}
+
+// Student grades handlers
+function showStudentGradesModal() {
+    document.getElementById('studentGradesModal').classList.add('active');
+    renderStudentGradesList();
+}
+
+function closeStudentGradesModal() {
+    document.getElementById('studentGradesModal').classList.remove('active');
+}
+
+function renderStudentGradesList() {
+    const container = document.getElementById('studentGradesList');
+    if (!container) return;
+    
+    if (currentStudents.length === 0) {
+        container.innerHTML = '<div class="empty-state">No students found</div>';
+        return;
+    }
+    
+    if (currentRequirements.length === 0) {
+        container.innerHTML = '<div class="empty-state">Please add academic requirements first</div>';
+        return;
+    }
+    
+    container.innerHTML = `
+        <div class="form-group">
+            <label class="form-label">Select Requirement to Update</label>
+            <select id="gradeRequirementSelect" class="form-select" onchange="renderStudentsForGrading()">
+                <option value="">Choose a subject...</option>
+                ${currentRequirements.map(req => 
+                    `<option value="${req.id}">${req.subject} (Min: ${req.grade_required}%)</option>`
+                ).join('')}
+            </select>
+        </div>
+        <div id="studentsGradingList" class="students-grid"></div>
+    `;
+}
+
+function renderStudentsForGrading() {
+    const requirementId = document.getElementById('gradeRequirementSelect').value;
+    const container = document.getElementById('studentsGradingList');
+    
+    if (!requirementId) {
+        container.innerHTML = '';
+        return;
+    }
+    
+    container.innerHTML = currentStudents.map(student => `
+        <div class="student-card">
+            <div class="student-name">${student.first_name} ${student.last_name}</div>
+            <div class="student-info">Student ID: ${student.student_id || 'N/A'}</div>
+            <div class="student-info">Grade Level: ${student.grade_level || 'N/A'}</div>
+            <div class="grade-input-group">
+                <input type="number" 
+                       id="grade-${student.id}-${requirementId}" 
+                       class="grade-input" 
+                       placeholder="Grade %" 
+                       min="0" 
+                       max="100" 
+                       step="0.1">
+                <button class="btn-small primary" 
+                        onclick="handleUpdateGrade(${student.id}, ${requirementId})">
+                    Update
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function handleUpdateGrade(studentId, requirementId) {
+    const gradeInput = document.getElementById(`grade-${studentId}-${requirementId}`);
+    const grade = gradeInput.value;
+    
+    if (!grade || grade < 0 || grade > 100) {
+        alert('Please enter a valid grade between 0 and 100');
+        return;
+    }
+    
+    try {
+        await updateStudentGrade(studentId, requirementId, parseFloat(grade));
+        gradeInput.value = '';
+        alert('Grade updated successfully!');
+        await loadDashboardData();
+        // Re-render main dashboard to update alerts if needed
+        if (currentAlerts.length !== (await getAcademicAlerts()).length) {
+            render();
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+}
         
         // Main render function
         function render() {
