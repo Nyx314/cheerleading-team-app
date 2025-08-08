@@ -36,8 +36,8 @@ def create_demo_data():
     # Add demo users organized by grade
     users = [
         # Coaches (no grade needed)
-        ('coach', hash_password('password123'), 'coach', 'Sarah', 'Johnson', 'coach@aviators.edu', '555-0101', None, None),
-        ('assistant', hash_password('password123'), 'coach', 'Mike', 'Williams', 'assistant@aviators.edu', '555-0102', None, None),
+        ('coach', hash_password('password123'), 'coach', 'Y', 'Llevada', 'coach@aviators.edu', '555-0101', None, None),
+        ('assistant', hash_password('password123'), 'coach', 'Kat', 'Atherly', 'assistant@aviators.edu', '555-0102', None, None),
         
         # 9th Grade Cheerleaders
         ('student1', hash_password('password123'), 'student', 'Emma', 'Smith', 'emma@aviators.edu', '555-0201', '9th', None),
