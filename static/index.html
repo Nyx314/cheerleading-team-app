@@ -1,33 +1,494 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>Aviators Team Management</title>
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Cheerleading Team Management System</title>
     <style>
-        body { font-family: 'Inter', system-ui, sans-serif; }
-        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        .card-shadow { box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        .btn-primary { 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            transition: all 0.3s ease;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background-color: #f8fafc;
+            line-height: 1.6;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 420px;
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        
+        .login-title {
+            font-size: 32px;
+            font-weight: bold;
+            color: #1a202c;
+            margin-bottom: 8px;
+        }
+        
+        .login-subtitle {
+            color: #718096;
+            font-size: 16px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .btn-primary {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .error-message {
+            background: #fed7d7;
+            border: 1px solid #feb2b2;
+            color: #c53030;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+        
+        .demo-section {
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .demo-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 12px;
+        }
+        
+        .demo-accounts {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .demo-btn {
+            text-align: left;
+            padding: 12px;
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .demo-btn:hover {
+            background: #edf2f7;
+        }
+        
+        .demo-role {
+            font-weight: 600;
+            color: #2d3748;
+        }
+        
+        .demo-username {
+            color: #718096;
+            margin-left: 8px;
+        }
+        
+        .navbar {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 0 20px;
+        }
+        
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 64px;
+        }
+        
+        .navbar-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1a202c;
+        }
+        
+        .navbar-user {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .user-info {
+            font-size: 14px;
+            color: #718096;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            color: #2d3748;
+        }
+        
+        .user-role {
+            background: #ebf8ff;
+            color: #3182ce;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        
+        .btn-logout {
+            background: none;
+            border: none;
+            color: #718096;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: color 0.2s, background-color 0.2s;
+        }
+        
+        .btn-logout:hover {
+            color: #2d3748;
+            background: #f7fafc;
+        }
+        
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px 20px;
+        }
+        
+        .card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 24px;
+        }
+        
+        .card-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1a202c;
+            margin-bottom: 16px;
+        }
+        
+        .card-subtitle {
+            color: #718096;
+            margin-bottom: 16px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .stat-card {
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-card.red {
+            background: #fed7d7;
+            color: #c53030;
+        }
+        
+        .stat-card.blue {
+            background: #ebf8ff;
+            color: #3182ce;
+        }
+        
+        .stat-card.green {
+            background: #f0fff4;
+            color: #38a169;
+        }
+        
+        .stat-card.purple {
+            background: #faf5ff;
+            color: #805ad5;
+        }
+        
+        .stat-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+        }
+        
+        .events-section {
+            margin-top: 20px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1a202c;
+            margin-bottom: 16px;
+        }
+        
+        .events-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .event-item {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: box-shadow 0.2s;
+        }
+        
+        .event-item:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .event-info h4 {
+            font-weight: 600;
+            color: #1a202c;
+            margin-bottom: 4px;
+        }
+        
+        .event-time {
+            font-size: 14px;
+            color: #718096;
+            margin-bottom: 2px;
+        }
+        
+        .event-location {
+            font-size: 14px;
+            color: #a0aec0;
+        }
+        
+        .btn-signin {
+            background: #48bb78;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .btn-signin:hover {
+            background: #38a169;
+        }
+        
+        .loading-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8fafc;
+        }
+        
+        .loading-content {
+            text-align: center;
+        }
+        
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid #e2e8f0;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+        }
+        
+        .btn-action {
+            background: #667eea;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-right: 12px;
+            margin-bottom: 12px;
+            transition: background-color 0.2s;
+        }
+        
+        .btn-action:hover {
+            background: #5a67d8;
+        }
+        
+        .btn-secondary {
+            background: #48bb78;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-right: 12px;
+            margin-bottom: 12px;
+            transition: background-color 0.2s;
+        }
+        
+        .btn-secondary:hover {
+            background: #38a169;
+        }
+        
+        .alert-item {
+            border-left: 4px solid #f56565;
+            background: #fed7d7;
+            padding: 16px;
+            margin-bottom: 12px;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .alert-title {
+            font-weight: 600;
+            color: #c53030;
+            margin-bottom: 4px;
+        }
+        
+        .alert-text {
+            font-size: 14px;
+            color: #c53030;
+        }
+        
+        @media (max-width: 768px) {
+            .navbar-content {
+                flex-direction: column;
+                height: auto;
+                padding: 16px 0;
+                gap: 12px;
+            }
+            
+            .navbar-user {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .event-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            
+            .main-content {
+                padding: 16px;
+            }
+            
+            .login-card {
+                padding: 24px;
+            }
+        }
     </style>
 </head>
-<body class="bg-gray-50">
-    <div id="root"></div>
+<body>
+    <div id="root">
+        <div class="loading-container">
+            <div class="loading-content">
+                <div class="spinner"></div>
+                <p>Loading Team Management System...</p>
+            </div>
+        </div>
+    </div>
 
-    <script type="text/babel">
-        const { useState, useEffect, useCallback } = React;
-
-        // API utility functions
-        const api = {
-            async request(url, options = {}) {
+    <script>
+        // Global app state
+        let currentUser = null;
+        let currentEvents = [];
+        let currentAlerts = [];
+        
+        // API helper functions
+        async function apiRequest(url, options = {}) {
+            try {
                 const response = await fetch(url, {
                     credentials: 'include',
                     headers: {
@@ -43,779 +504,434 @@
                 }
                 
                 return response.json();
-            },
-
-            auth: {
-                login: (credentials) => api.request('/api/auth/login', {
-                    method: 'POST',
-                    body: JSON.stringify(credentials),
-                }),
-                logout: () => api.request('/api/auth/logout', { method: 'POST' }),
-                me: () => api.request('/api/auth/me'),
-            },
-
-            events: {
-                list: () => api.request('/api/events'),
-                create: (event) => api.request('/api/events', {
-                    method: 'POST',
-                    body: JSON.stringify(event),
-                }),
-                today: () => api.request('/api/events/today'),
-            },
-
-            attendance: {
-                signIn: (eventId) => api.request('/api/attendance/sign-in', {
-                    method: 'POST',
-                    body: JSON.stringify({ event_id: eventId }),
-                }),
-                signOut: (eventId) => api.request('/api/attendance/sign-out', {
-                    method: 'POST',
-                    body: JSON.stringify({ event_id: eventId }),
-                }),
-                getStudentAttendance: (studentId) => api.request(`/api/attendance/students/${studentId}/attendance`),
-            },
-
-            academics: {
-                getRequirements: () => api.request('/api/academics/requirements'),
-                createRequirement: (requirement) => api.request('/api/academics/requirements', {
-                    method: 'POST',
-                    body: JSON.stringify(requirement),
-                }),
-                getAlerts: () => api.request('/api/academics/alerts'),
-            },
-
-            users: {
-                getStudents: () => api.request('/api/users/students'),
-            },
-        };
-
-        // Login Component
-        function Login({ onLogin }) {
-            const [credentials, setCredentials] = useState({ username: '', password: '' });
-            const [loading, setLoading] = useState(false);
-            const [error, setError] = useState('');
-
-            const handleSubmit = async (e) => {
-                e.preventDefault();
-                setLoading(true);
-                setError('');
-
-                try {
-                    const result = await api.auth.login(credentials);
-                    onLogin(result.user);
-                } catch (err) {
-                    setError(err.message);
-                } finally {
-                    setLoading(false);
-                }
-            };
-
-        const demoAccounts = [
-    { username: 'coach', password: 'password123', role: 'Coach' },
-    { username: 'student1', password: 'password123', role: 'Cheerleader (Emma - 9th)' },
-    { username: 'student2', password: 'password123', role: 'Cheerleader (Sophia - 10th)' },
-    { username: 'parent1', password: 'password123', role: 'Parent (John)' },
-];
-
-            return (
-                <div className="min-h-screen gradient-bg flex items-center justify-center p-4">
-                    <div className="bg-white rounded-2xl card-shadow p-8 w-full max-w-md">
-                      <div className="text-center mb-8">
-    <img src="https://i.imgur.com/AH1csyx.png" alt="Aviators Logo" className="mx-auto mb-4 h-16 w-auto" />
-    <h1 className="text-3xl font-bold text-gray-800 mb-2">Aviators Management</h1>
-    <p className="text-gray-600">Aviators Team Portal</p>
-</div>
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Username</label>
-                                <input
-                                    type="text"
-                                    value={credentials.username}
-                                    onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    required
-                                />
+            } catch (error) {
+                console.error('API Error:', error);
+                throw error;
+            }
+        }
+        
+        // Authentication functions
+        async function login(username, password) {
+            return apiRequest('/api/auth/login', {
+                method: 'POST',
+                body: JSON.stringify({ username, password }),
+            });
+        }
+        
+        async function logout() {
+            return apiRequest('/api/auth/logout', { method: 'POST' });
+        }
+        
+        async function getCurrentUser() {
+            return apiRequest('/api/auth/me');
+        }
+        
+        // Event functions
+        async function getTodayEvents() {
+            return apiRequest('/api/events/today');
+        }
+        
+        async function getAllEvents() {
+            return apiRequest('/api/events');
+        }
+        
+        async function signInToEvent(eventId) {
+            return apiRequest('/api/attendance/sign-in', {
+                method: 'POST',
+                body: JSON.stringify({ event_id: eventId }),
+            });
+        }
+        
+        // Academic functions
+        async function getAcademicAlerts() {
+            return apiRequest('/api/academics/alerts');
+        }
+        
+        // Render functions
+        function renderLogin() {
+            return `
+                <div class="gradient-bg">
+                    <div class="login-card">
+                        <div class="login-header">
+                            <h1 class="login-title">🏆 Team Management</h1>
+                            <p class="login-subtitle">Cheerleading Team Portal</p>
+                        </div>
+                        
+                        <form id="loginForm">
+                            <div class="form-group">
+                                <label class="form-label">Username</label>
+                                <input type="text" id="username" class="form-input" required>
                             </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
-                                <input
-                                    type="password"
-                                    value={credentials.password}
-                                    onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    required
-                                />
+                            
+                            <div class="form-group">
+                                <label class="form-label">Password</label>
+                                <input type="password" id="password" class="form-input" required>
                             </div>
-
-                            {error && (
-                                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                                    {error}
-                                </div>
-                            )}
-
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full btn-primary text-white py-3 rounded-lg font-medium disabled:opacity-50"
-                            >
-                                {loading ? 'Signing in...' : 'Sign In'}
+                            
+                            <div id="errorMessage"></div>
+                            
+                            <button type="submit" class="btn-primary" id="loginBtn">
+                                Sign In
                             </button>
                         </form>
-
-                        <div className="mt-8 pt-6 border-t border-gray-200">
-                            <h3 className="text-sm font-medium text-gray-700 mb-3">Demo Accounts:</h3>
-                            <div className="space-y-2">
-                                {demoAccounts.map((account, index) => (
-                                    <button
-                                        key={index}
-                                        onClick={() => setCredentials({ username: account.username, password: account.password })}
-                                        className="w-full text-left px-3 py-2 text-sm bg-gray-50 hover:bg-gray-100 rounded border"
-                                    >
-                                        <span className="font-medium">{account.role}</span>
-                                        <span className="text-gray-500 ml-2">({account.username})</span>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            );
-        }
-
-        // Student Dashboard
-        function StudentDashboard({ user }) {
-            const [todayEvents, setTodayEvents] = useState([]);
-            const [attendance, setAttendance] = useState([]);
-            const [requirements, setRequirements] = useState([]);
-            const [loading, setLoading] = useState(true);
-
-            useEffect(() => {
-                loadData();
-            }, []);
-
-            const loadData = async () => {
-                try {
-                    const [eventsData, attendanceData, requirementsData] = await Promise.all([
-                        api.events.today(),
-                        api.attendance.getStudentAttendance(user.id),
-                        api.academics.getRequirements(),
-                    ]);
-                    
-                    setTodayEvents(eventsData);
-                    setAttendance(attendanceData);
-                    setRequirements(requirementsData);
-                } catch (error) {
-                    console.error('Error loading data:', error);
-                } finally {
-                    setLoading(false);
-                }
-            };
-
-            const handleSignIn = async (eventId) => {
-                try {
-                    await api.attendance.signIn(eventId);
-                    loadData();
-                } catch (error) {
-                    alert('Error signing in: ' + error.message);
-                }
-            };
-
-            const handleSignOut = async (eventId) => {
-                try {
-                    await api.attendance.signOut(eventId);
-                    loadData();
-                } catch (error) {
-                    alert('Error signing out: ' + error.message);
-                }
-            };
-
-            if (loading) return <div className="flex justify-center p-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div></div>;
-
-            return (
-                <div className="space-y-6">
-                    <div className="bg-white rounded-xl card-shadow p-6">
-                        <h2 className="text-xl font-bold text-gray-800 mb-4">Welcome back, {user.first_name}!</h2>
                         
-                        <div className="grid md:grid-cols-3 gap-4">
-                            <div className="bg-blue-50 p-4 rounded-lg">
-                                <h3 className="font-semibold text-blue-800">Today's Events</h3>
-                                <p className="text-2xl font-bold text-blue-600">{todayEvents.length}</p>
-                            </div>
-                            <div className="bg-green-50 p-4 rounded-lg">
-                                <h3 className="font-semibold text-green-800">Total Attendance</h3>
-                                <p className="text-2xl font-bold text-green-600">{attendance.length}</p>
-                            </div>
-                            <div className="bg-purple-50 p-4 rounded-lg">
-                                <h3 className="font-semibold text-purple-800">Academic Requirements</h3>
-                                <p className="text-2xl font-bold text-purple-600">{requirements.length}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Today's Events */}
-                    <div className="bg-white rounded-xl card-shadow p-6">
-                        <h3 className="text-lg font-bold text-gray-800 mb-4">Today's Events</h3>
-                        {todayEvents.length === 0 ? (
-                            <p className="text-gray-500">No events scheduled for today</p>
-                        ) : (
-                            <div className="space-y-3">
-                                {todayEvents.map((event) => {
-                                    const isSignedIn = attendance.some(a => a.event_id === event.id && !a.sign_out_time);
-                                    return (
-                                        <div key={event.id} className="border rounded-lg p-4 flex justify-between items-center">
-                                            <div>
-                                                <h4 className="font-medium">{event.title}</h4>
-                                                <p className="text-sm text-gray-600">{event.start_time} - {event.end_time}</p>
-                                                <p className="text-sm text-gray-500">{event.location}</p>
-                                            </div>
-                                            <div className="space-x-2">
-                                                {!isSignedIn ? (
-                                                    <button
-                                                        onClick={() => handleSignIn(event.id)}
-                                                        className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-                                                    >
-                                                        Sign In
-                                                    </button>
-                                                ) : (
-                                                    <button
-                                                        onClick={() => handleSignOut(event.id)}
-                                                        className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-                                                    >
-                                                        Sign Out
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Academic Requirements */}
-                    <div className="bg-white rounded-xl card-shadow p-6">
-                        <h3 className="text-lg font-bold text-gray-800 mb-4">Academic Requirements</h3>
-                        {requirements.length === 0 ? (
-                            <p className="text-gray-500">No academic requirements assigned</p>
-                        ) : (
-                            <div className="space-y-3">
-                                {requirements.map((req) => (
-                                    <div key={req.id} className="border rounded-lg p-4">
-                                        <div className="flex justify-between items-start">
-                                            <div>
-                                                <h4 className="font-medium">{req.subject}</h4>
-                                                <p className="text-sm text-gray-600">Required: {req.grade_required}%</p>
-                                                {req.current_grade && (
-                                                    <p className="text-sm">Current: {req.current_grade}%</p>
-                                                )}
-                                                <p className="text-sm text-gray-500">Due: {req.due_date}</p>
-                                            </div>
-                                            <span className={`px-2 py-1 rounded text-xs font-medium ${
-                                                req.status === 'completed' ? 'bg-green-100 text-green-800' :
-                                                req.status === 'at_risk' ? 'bg-red-100 text-red-800' :
-                                                req.status === 'on_track' ? 'bg-blue-100 text-blue-800' :
-                                                'bg-gray-100 text-gray-800'
-                                            }`}>
-                                                {req.status.replace('_', ' ').toUpperCase()}
-                                            </span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </div>
-            );
-        }
-
-        // Coach Dashboard
-function CoachDashboard({ user }) {
-    const [alerts, setAlerts] = useState([]);
-    const [students, setStudents] = useState([]);
-    const [events, setEvents] = useState([]);
-    const [selectedGrade, setSelectedGrade] = useState('9th');
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        loadData();
-    }, []);
-
-    const loadData = async () => {
-        try {
-            const [alertsData, studentsData, eventsData] = await Promise.all([
-                api.academics.getAlerts(),
-                api.users.getStudents(),
-                api.events.list(),
-            ]);
-            
-            setAlerts(alertsData);
-            setStudents(studentsData);
-            setEvents(eventsData);
-        } catch (error) {
-            console.error('Error loading data:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // Group students by grade
-    const studentsByGrade = {
-        '9th': students.filter(s => s.grade === '9th'),
-        '10th': students.filter(s => s.grade === '10th'),
-        '11th': students.filter(s => s.grade === '11th'),
-        '12th': students.filter(s => s.grade === '12th'),
-    };
-
-    if (loading) return <div className="flex justify-center p-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div></div>;
-
-    return (
-        <div className="space-y-6">
-            <div className="bg-white rounded-xl card-shadow p-6">
-                <h2 className="text-xl font-bold text-gray-800 mb-4">Coach Dashboard</h2>
-                
-                <div className="grid md:grid-cols-4 gap-4">
-                    <div className="bg-red-50 p-4 rounded-lg">
-                        <h3 className="font-semibold text-red-800">Academic Alerts</h3>
-                        <p className="text-2xl font-bold text-red-600">{alerts.length}</p>
-                    </div>
-                    <div className="bg-blue-50 p-4 rounded-lg">
-                        <h3 className="font-semibold text-blue-800">Total Cheerleaders</h3>
-                        <p className="text-2xl font-bold text-blue-600">{students.length}</p>
-                    </div>
-                    <div className="bg-green-50 p-4 rounded-lg">
-                        <h3 className="font-semibold text-green-800">Upcoming Events</h3>
-                        <p className="text-2xl font-bold text-green-600">{events.length}</p>
-                    </div>
-                    <div className="bg-purple-50 p-4 rounded-lg">
-                        <h3 className="font-semibold text-purple-800">This Week</h3>
-                        <p className="text-2xl font-bold text-purple-600">
-                            {events.filter(e => {
-                                const eventDate = new Date(e.date);
-                                const today = new Date();
-                                const weekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
-                                return eventDate >= today && eventDate <= weekFromNow;
-                            }).length}
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            {/* Cheerleaders by Grade */}
-            <div className="bg-white rounded-xl card-shadow p-6">
-                <h3 className="text-lg font-bold text-gray-800 mb-4">
-    <img src="https://i.imgur.com/AH1csyx.png" alt="Aviators Logo" className="inline h-5 w-auto mr-2" />
-    Aviators Cheerleaders
-</h3>
-                
-                {/* Grade Tabs */}
-                <div className="flex space-x-1 mb-6 bg-gray-100 rounded-lg p-1">
-                    {['9th', '10th', '11th', '12th'].map((grade) => (
-                        <button
-                            key={grade}
-                            onClick={() => setSelectedGrade(grade)}
-                            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                                selectedGrade === grade
-                                    ? 'bg-blue-500 text-white'
-                                    : 'text-gray-600 hover:text-gray-800'
-                            }`}
-                        >
-                            {grade} Grade ({studentsByGrade[grade]?.length || 0})
-                        </button>
-                    ))}
-                </div>
-
-                {/* Selected Grade Students */}
-                <div className="space-y-3">
-                    {studentsByGrade[selectedGrade]?.length === 0 ? (
-                        <p className="text-gray-500 text-center py-8">No cheerleaders in {selectedGrade} grade</p>
-                    ) : (
-                        <div className="grid md:grid-cols-2 gap-4">
-                            {studentsByGrade[selectedGrade]?.map((student) => (
-                                <div key={student.id} className="border rounded-lg p-4 hover:bg-gray-50">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <h4 className="font-medium text-gray-800">
-                                                {student.first_name} {student.last_name}
-                                            </h4>
-                                            <p className="text-sm text-gray-600">{student.email}</p>
-                                            <p className="text-sm text-gray-500">{student.phone}</p>
-                                        </div>
-                                        <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium">
-                                            {selectedGrade} Grade
-                                        </span>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* Academic Alerts */}
-            {alerts.length > 0 && (
-                <div className="bg-white rounded-xl card-shadow p-6">
-                    <h3 className="text-lg font-bold text-gray-800 mb-4 text-red-600">Academic Alerts</h3>
-                    <div className="space-y-3">
-                        {alerts.map((alert) => (
-                            <div key={alert.id} className="border-l-4 border-red-500 bg-red-50 p-4">
-                                <h4 className="font-medium text-red-800">
-                                    {alert.first_name} {alert.last_name} - {alert.subject}
-                                </h4>
-                                <p className="text-sm text-red-600">
-                                    Current grade: {alert.current_grade}% (Required: {alert.grade_required}%)
-                                </p>
-                                <p className="text-sm text-gray-600">Due: {alert.due_date}</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {/* Upcoming Events */}
-            <div className="bg-white rounded-xl card-shadow p-6">
-                <h3 className="text-lg font-bold text-gray-800 mb-4">Upcoming Events</h3>
-                <div className="space-y-3">
-                    {events.slice(0, 5).map((event) => (
-                        <div key={event.id} className="border rounded-lg p-4">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <h4 className="font-medium">{event.title}</h4>
-                                    <p className="text-sm text-gray-600">{event.date} | {event.start_time}</p>
-                                    <p className="text-sm text-gray-500">{event.location}</p>
-                                </div>
-                                <span className={`px-2 py-1 rounded text-xs font-medium ${
-                                    event.event_type === 'competition' ? 'bg-red-100 text-red-800' :
-                                    event.event_type === 'practice' ? 'bg-blue-100 text-blue-800' :
-                                    event.event_type === 'performance' ? 'bg-purple-100 text-purple-800' :
-                                    'bg-gray-100 text-gray-800'
-                                }`}>
-                                    {event.event_type.toUpperCase()}
-                                </span>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </div>
-    );
-}
-            useEffect(() => {
-                loadData();
-            }, []);
-
-            const loadData = async () => {
-                try {
-                    const [alertsData, studentsData, eventsData] = await Promise.all([
-                        api.academics.getAlerts(),
-                        api.users.getStudents(),
-                        api.events.list(),
-                    ]);
-                    
-                    setAlerts(alertsData);
-                    setStudents(studentsData);
-                    setEvents(eventsData);
-                } catch (error) {
-                    console.error('Error loading data:', error);
-                } finally {
-                    setLoading(false);
-                }
-            };
-
-            if (loading) return <div className="flex justify-center p-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div></div>;
-
-            return (
-                <div className="space-y-6">
-                    <div className="bg-white rounded-xl card-shadow p-6">
-                        <h2 className="text-xl font-bold text-gray-800 mb-4">Coach Dashboard</h2>
-                        
-                        <div className="grid md:grid-cols-4 gap-4">
-                            <div className="bg-red-50 p-4 rounded-lg">
-                                <h3 className="font-semibold text-red-800">Academic Alerts</h3>
-                                <p className="text-2xl font-bold text-red-600">{alerts.length}</p>
-                            </div>
-                            <div className="bg-blue-50 p-4 rounded-lg">
-                                <h3 className="font-semibold text-blue-800">Total Students</h3>
-                                <p className="text-2xl font-bold text-blue-600">{students.length}</p>
-                            </div>
-                            <div className="bg-green-50 p-4 rounded-lg">
-                                <h3 className="font-semibold text-green-800">Upcoming Events</h3>
-                                <p className="text-2xl font-bold text-green-600">{events.length}</p>
-                            </div>
-                            <div className="bg-purple-50 p-4 rounded-lg">
-                                <h3 className="font-semibold text-purple-800">This Week</h3>
-                                <p className="text-2xl font-bold text-purple-600">
-                                    {events.filter(e => {
-                                        const eventDate = new Date(e.date);
-                                        const today = new Date();
-                                        const weekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
-                                        return eventDate >= today && eventDate <= weekFromNow;
-                                    }).length}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Academic Alerts */}
-                    {alerts.length > 0 && (
-                        <div className="bg-white rounded-xl card-shadow p-6">
-                            <h3 className="text-lg font-bold text-gray-800 mb-4 text-red-600">Academic Alerts</h3>
-                            <div className="space-y-3">
-                                {alerts.map((alert) => (
-                                    <div key={alert.id} className="border-l-4 border-red-500 bg-red-50 p-4">
-                                        <h4 className="font-medium text-red-800">
-                                            {alert.first_name} {alert.last_name} - {alert.subject}
-                                        </h4>
-                                        <p className="text-sm text-red-600">
-                                            Current grade: {alert.current_grade}% (Required: {alert.grade_required}%)
-                                        </p>
-                                        <p className="text-sm text-gray-600">Due: {alert.due_date}</p>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Upcoming Events */}
-                    <div className="bg-white rounded-xl card-shadow p-6">
-                        <h3 className="text-lg font-bold text-gray-800 mb-4">Upcoming Events</h3>
-                        <div className="space-y-3">
-                            {events.slice(0, 5).map((event) => (
-                                <div key={event.id} className="border rounded-lg p-4">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <h4 className="font-medium">{event.title}</h4>
-                                            <p className="text-sm text-gray-600">{event.date} | {event.start_time}</p>
-                                            <p className="text-sm text-gray-500">{event.location}</p>
-                                        </div>
-                                        <span className={`px-2 py-1 rounded text-xs font-medium ${
-                                            event.event_type === 'competition' ? 'bg-red-100 text-red-800' :
-                                            event.event_type === 'practice' ? 'bg-blue-100 text-blue-800' :
-                                            event.event_type === 'performance' ? 'bg-purple-100 text-purple-800' :
-                                            'bg-gray-100 text-gray-800'
-                                        }`}>
-                                            {event.event_type.toUpperCase()}
-                                        </span>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            );
-        }
-
-        // Parent Dashboard
-        function ParentDashboard({ user }) {
-            const [requirements, setRequirements] = useState([]);
-            const [events, setEvents] = useState([]);
-            const [loading, setLoading] = useState(true);
-
-            useEffect(() => {
-                loadData();
-            }, []);
-
-            const loadData = async () => {
-                try {
-                    const [requirementsData, eventsData] = await Promise.all([
-                        api.academics.getRequirements(),
-                        api.events.list(),
-                    ]);
-                    
-                    setRequirements(requirementsData);
-                    setEvents(eventsData);
-                } catch (error) {
-                    console.error('Error loading data:', error);
-                } finally {
-                    setLoading(false);
-                }
-            };
-
-            if (loading) return <div className="flex justify-center p-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div></div>;
-
-            return (
-                <div className="space-y-6">
-                    <div className="bg-white rounded-xl card-shadow p-6">
-                        <h2 className="text-xl font-bold text-gray-800 mb-4">Parent Portal</h2>
-                        <p className="text-gray-600">Monitor your child's academic progress and team activities.</p>
-                    </div>
-
-                    {/* Child's Academic Status */}
-                    <div className="bg-white rounded-xl card-shadow p-6">
-                        <h3 className="text-lg font-bold text-gray-800 mb-4">Academic Requirements</h3>
-                        {requirements.length === 0 ? (
-                            <p className="text-gray-500">No academic requirements found</p>
-                        ) : (
-                            <div className="space-y-3">
-                                {requirements.map((req) => (
-                                    <div key={req.id} className="border rounded-lg p-4">
-                                        <div className="flex justify-between items-start">
-                                            <div>
-                                                <h4 className="font-medium">{req.subject}</h4>
-                                                <p className="text-sm text-gray-600">Student: {req.student_first} {req.student_last}</p>
-                                                <p className="text-sm text-gray-600">Required: {req.grade_required}%</p>
-                                                {req.current_grade && (
-                                                    <p className="text-sm">Current: {req.current_grade}%</p>
-                                                )}
-                                                <p className="text-sm text-gray-500">Due: {req.due_date}</p>
-                                            </div>
-                                            <span className={`px-2 py-1 rounded text-xs font-medium ${
-                                                req.status === 'completed' ? 'bg-green-100 text-green-800' :
-                                                req.status === 'at_risk' ? 'bg-red-100 text-red-800' :
-                                                req.status === 'on_track' ? 'bg-blue-100 text-blue-800' :
-                                                'bg-gray-100 text-gray-800'
-                                            }`}>
-                                                {req.status.replace('_', ' ').toUpperCase()}
-                                            </span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Team Schedule */}
-                    <div className="bg-white rounded-xl card-shadow p-6">
-                        <h3 className="text-lg font-bold text-gray-800 mb-4">Upcoming Team Events</h3>
-                        <div className="space-y-3">
-                            {events.slice(0, 5).map((event) => (
-                                <div key={event.id} className="border rounded-lg p-4">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <h4 className="font-medium">{event.title}</h4>
-                                            <p className="text-sm text-gray-600">{event.date} | {event.start_time} - {event.end_time}</p>
-                                            <p className="text-sm text-gray-500">{event.location}</p>
-                                            {event.description && (
-                                                <p className="text-sm text-gray-600 mt-1">{event.description}</p>
-                                            )}
-                                        </div>
-                                        <span className={`px-2 py-1 rounded text-xs font-medium ${
-                                            event.event_type === 'competition' ? 'bg-red-100 text-red-800' :
-                                            event.event_type === 'practice' ? 'bg-blue-100 text-blue-800' :
-                                            event.event_type === 'performance' ? 'bg-purple-100 text-purple-800' :
-                                            'bg-gray-100 text-gray-800'
-                                        }`}>
-                                            {event.event_type.toUpperCase()}
-                                        </span>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            );
-        }
-
-        // Navigation Component
-        function Navigation({ user, onLogout }) {
-            return (
-                <nav className="bg-white shadow-lg">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="flex justify-between h-16">
-                            <div className="flex items-center">
-                                <div className="flex-shrink-0">
-                                 //https://i.imgur.com/AH1csyx.png
-<div className="flex items-center space-x-3">
-    <img src="https://i.imgur.com/AH1csyx.png" alt="Aviators Logo" className="h-8 w-auto" />
-    <h1 className="text-xl font-bold text-gray-800">
-        Aviators Team Management
-    </h1>
-</div>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center space-x-4">
-                                <div className="text-sm text-gray-600">
-                                    Welcome, <span className="font-medium">{user.first_name} {user.last_name}</span>
-                                    <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
-                                        {user.role.replace('_', ' ').toUpperCase()}
-                                    </span>
-                                </div>
-                                <button
-                                    onClick={onLogout}
-                                    className="text-gray-600 hover:text-gray-800 font-medium"
-                                >
-                                    Logout
+                        <div class="demo-section">
+                            <h3 class="demo-title">Demo Accounts:</h3>
+                            <div class="demo-accounts">
+                                <button class="demo-btn" onclick="fillDemo('coach', 'password123')">
+                                    <span class="demo-role">Coach</span>
+                                    <span class="demo-username">(coach)</span>
+                                </button>
+                                <button class="demo-btn" onclick="fillDemo('student1', 'password123')">
+                                    <span class="demo-role">Student (Emma)</span>
+                                    <span class="demo-username">(student1)</span>
+                                </button>
+                                <button class="demo-btn" onclick="fillDemo('parent1', 'password123')">
+                                    <span class="demo-role">Parent (John)</span>
+                                    <span class="demo-username">(parent1)</span>
+                                </button>
+                                <button class="demo-btn" onclick="fillDemo('director', 'password123')">
+                                    <span class="demo-role">Athletic Director</span>
+                                    <span class="demo-username">(director)</span>
                                 </button>
                             </div>
                         </div>
                     </div>
-                </nav>
-            );
-        }
-
-        // Main App Component
-        function App() {
-            const [user, setUser] = useState(null);
-            const [loading, setLoading] = useState(true);
-
-            useEffect(() => {
-                checkAuth();
-            }, []);
-
-            const checkAuth = async () => {
-                try {
-                    const userData = await api.auth.me();
-                    setUser(userData);
-                } catch (error) {
-                    console.log('Not authenticated');
-                } finally {
-                    setLoading(false);
-                }
-            };
-
-            const handleLogin = (userData) => {
-                setUser(userData);
-            };
-
-            const handleLogout = async () => {
-                try {
-                    await api.auth.logout();
-                    setUser(null);
-                } catch (error) {
-                    console.error('Logout error:', error);
-                }
-            };
-
-            const renderDashboard = () => {
-                switch (user.role) {
-                    case 'student':
-                        return <StudentDashboard user={user} />;
-                    case 'coach':
-                    case 'assistant_coach':
-                    case 'athletic_director':
-                        return <CoachDashboard user={user} />;
-                    case 'parent':
-                        return <ParentDashboard user={user} />;
-                    default:
-                        return <div>Unknown user role</div>;
-                }
-            };
-
-            if (loading) {
-                return (
-                    <div className="min-h-screen flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-                    </div>
-                );
-            }
-
-            if (!user) {
-                return <Login onLogin={handleLogin} />;
-            }
-
-            return (
-                <div className="min-h-screen bg-gray-50">
-                    <Navigation user={user} onLogout={handleLogout} />
-                    <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                        {renderDashboard()}
-                    </main>
                 </div>
-            );
+            `;
         }
-
-        // Render the app
-        ReactDOM.render(<App />, document.getElementById('root'));
+        
+        function renderNavbar() {
+            const roleDisplay = currentUser.role.replace('_', ' ').toUpperCase();
+            return `
+                <nav class="navbar">
+                    <div class="navbar-content">
+                        <h1 class="navbar-title">🏆 Team Management</h1>
+                        <div class="navbar-user">
+                            <div class="user-info">
+                                <span class="user-name">${currentUser.first_name} ${currentUser.last_name}</span>
+                                <span class="user-role">${roleDisplay}</span>
+                            </div>
+                            <button class="btn-logout" onclick="handleLogout()">Logout</button>
+                        </div>
+                    </div>
+                </nav>
+            `;
+        }
+        
+        function renderStudentDashboard() {
+            const eventsHtml = currentEvents.length === 0 
+                ? '<div class="empty-state">No events scheduled for today</div>'
+                : currentEvents.map(event => `
+                    <div class="event-item">
+                        <div class="event-info">
+                            <h4>${event.title}</h4>
+                            <div class="event-time">${event.start_time} - ${event.end_time || 'TBD'}</div>
+                            <div class="event-location">${event.location || 'TBD'}</div>
+                        </div>
+                        <button class="btn-signin" onclick="handleSignIn(${event.id})">
+                            Sign In
+                        </button>
+                    </div>
+                `).join('');
+            
+            return `
+                <div class="main-content">
+                    <div class="card">
+                        <h2 class="card-title">Welcome back, ${currentUser.first_name}! 👋</h2>
+                        <p class="card-subtitle">Ready for today's activities?</p>
+                        
+                        <div class="stats-grid">
+                            <div class="stat-card blue">
+                                <div class="stat-title">Today's Events</div>
+                                <div class="stat-value">${currentEvents.length}</div>
+                            </div>
+                            <div class="stat-card green">
+                                <div class="stat-title">This Month</div>
+                                <div class="stat-value">12</div>
+                            </div>
+                            <div class="stat-card purple">
+                                <div class="stat-title">Attendance Rate</div>
+                                <div class="stat-value">95%</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3 class="section-title">Today's Events</h3>
+                        <div class="events-list">
+                            ${eventsHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function renderCoachDashboard() {
+            const alertsHtml = currentAlerts.length === 0 
+                ? '<div class="empty-state">No academic alerts at this time</div>'
+                : currentAlerts.map(alert => `
+                    <div class="alert-item">
+                        <div class="alert-title">${alert.first_name} ${alert.last_name} - ${alert.subject}</div>
+                        <div class="alert-text">Current: ${alert.current_grade}% (Required: ${alert.grade_required}%)</div>
+                    </div>
+                `).join('');
+            
+            return `
+                <div class="main-content">
+                    <div class="card">
+                        <h2 class="card-title">Coach Dashboard 📊</h2>
+                        <p class="card-subtitle">Manage your team and track performance</p>
+                        
+                        <div class="stats-grid">
+                            <div class="stat-card red">
+                                <div class="stat-title">Academic Alerts</div>
+                                <div class="stat-value">${currentAlerts.length}</div>
+                            </div>
+                            <div class="stat-card blue">
+                                <div class="stat-title">Total Events</div>
+                                <div class="stat-value">${currentEvents.length}</div>
+                            </div>
+                            <div class="stat-card green">
+                                <div class="stat-title">Active Students</div>
+                                <div class="stat-value">5</div>
+                            </div>
+                            <div class="stat-card purple">
+                                <div class="stat-title">This Season</div>
+                                <div class="stat-value">2024</div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 20px;">
+                            <button class="btn-action" onclick="alert('Create Event feature coming soon!')">
+                                Create Event
+                            </button>
+                            <button class="btn-secondary" onclick="alert('Academic Requirements feature coming soon!')">
+                                Add Academic Requirement
+                            </button>
+                        </div>
+                    </div>
+                    
+                    ${currentAlerts.length > 0 ? `
+                    <div class="card">
+                        <h3 class="section-title">⚠️ Academic Alerts</h3>
+                        ${alertsHtml}
+                    </div>
+                    ` : ''}
+                    
+                    <div class="card">
+                        <h3 class="section-title">Recent Events</h3>
+                        <div class="events-list">
+                            ${currentEvents.slice(0, 5).map(event => `
+                                <div class="event-item">
+                                    <div class="event-info">
+                                        <h4>${event.title}</h4>
+                                        <div class="event-time">${event.date} | ${event.start_time}</div>
+                                        <div class="event-location">${event.location || 'TBD'}</div>
+                                    </div>
+                                    <div style="padding: 8px 12px; background: #ebf8ff; color: #3182ce; border-radius: 4px; font-size: 12px; font-weight: 600;">
+                                        ${event.event_type.toUpperCase()}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function renderParentDashboard() {
+            return `
+                <div class="main-content">
+                    <div class="card">
+                        <h2 class="card-title">Parent Portal 👨‍👩‍👧‍👦</h2>
+                        <p class="card-subtitle">Welcome, ${currentUser.first_name}! Monitor your child's progress and team activities.</p>
+                        
+                        <div class="stats-grid">
+                            <div class="stat-card blue">
+                                <div class="stat-title">Academic Status</div>
+                                <div class="stat-value" style="font-size: 18px;">Good Standing</div>
+                            </div>
+                            <div class="stat-card green">
+                                <div class="stat-title">Attendance Rate</div>
+                                <div class="stat-value">95%</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3 class="section-title">Upcoming Team Events</h3>
+                        <div class="events-list">
+                            ${currentEvents.slice(0, 5).map(event => `
+                                <div class="event-item">
+                                    <div class="event-info">
+                                        <h4>${event.title}</h4>
+                                        <div class="event-time">${event.date} | ${event.start_time} - ${event.end_time || 'TBD'}</div>
+                                        <div class="event-location">${event.location || 'TBD'}</div>
+                                        ${event.description ? `<div style="margin-top: 4px; font-size: 14px; color: #718096;">${event.description}</div>` : ''}
+                                    </div>
+                                    <div style="padding: 8px 12px; background: #ebf8ff; color: #3182ce; border-radius: 4px; font-size: 12px; font-weight: 600;">
+                                        ${event.event_type.toUpperCase()}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function renderDashboard() {
+            let dashboardContent = '';
+            
+            switch (currentUser.role) {
+                case 'student':
+                    dashboardContent = renderStudentDashboard();
+                    break;
+                case 'coach':
+                case 'assistant_coach':
+                case 'athletic_director':
+                    dashboardContent = renderCoachDashboard();
+                    break;
+                case 'parent':
+                    dashboardContent = renderParentDashboard();
+                    break;
+                default:
+                    dashboardContent = `
+                        <div class="main-content">
+                            <div class="card">
+                                <h2 class="card-title">Welcome!</h2>
+                                <p>Role: ${currentUser.role}</p>
+                            </div>
+                        </div>
+                    `;
+            }
+            
+            return renderNavbar() + dashboardContent;
+        }
+        
+        function renderLoading() {
+            return `
+                <div class="loading-container">
+                    <div class="loading-content">
+                        <div class="spinner"></div>
+                        <p>Loading...</p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Event handlers
+        function fillDemo(username, password) {
+            document.getElementById('username').value = username;
+            document.getElementById('password').value = password;
+        }
+        
+        async function handleLogin(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('errorMessage');
+            const loginBtn = document.getElementById('loginBtn');
+            
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Signing in...';
+            errorDiv.innerHTML = '';
+            
+            try {
+                const result = await login(username, password);
+                currentUser = result.user;
+                await loadDashboardData();
+                render();
+            } catch (error) {
+                errorDiv.innerHTML = `<div class="error-message">${error.message}</div>`;
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Sign In';
+            }
+        }
+        
+        async function handleLogout() {
+            try {
+                await logout();
+            } catch (error) {
+                console.error('Logout error:', error);
+            } finally {
+                currentUser = null;
+                currentEvents = [];
+                currentAlerts = [];
+                render();
+            }
+        }
+        
+        async function handleSignIn(eventId) {
+            try {
+                await signInToEvent(eventId);
+                alert('Successfully signed in!');
+                await loadDashboardData();
+                render();
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+        
+        // Data loading functions
+        async function loadDashboardData() {
+            try {
+                if (currentUser.role === 'student') {
+                    currentEvents = await getTodayEvents();
+                } else {
+                    const [events, alerts] = await Promise.all([
+                        getAllEvents(),
+                        getAcademicAlerts().catch(() => [])
+                    ]);
+                    currentEvents = events;
+                    currentAlerts = alerts;
+                }
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                currentEvents = [];
+                currentAlerts = [];
+            }
+        }
+        
+        async function checkAuth() {
+            try {
+                currentUser = await getCurrentUser();
+                await loadDashboardData();
+            } catch (error) {
+                console.log('Not authenticated');
+                currentUser = null;
+            }
+        }
+        
+        // Main render function
+        function render() {
+            const root = document.getElementById('root');
+            
+            if (currentUser === null) {
+                root.innerHTML = renderLogin();
+                
+                // Add event listener for login form
+                const loginForm = document.getElementById('loginForm');
+                if (loginForm) {
+                    loginForm.addEventListener('submit', handleLogin);
+                }
+            } else {
+                root.innerHTML = renderDashboard();
+            }
+        }
+        
+        // Initialize app
+        async function init() {
+            document.getElementById('root').innerHTML = renderLoading();
+            await checkAuth();
+            render();
+        }
+        
+        // Start the app
+        init();
     </script>
 </body>
 </html>
