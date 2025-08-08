@@ -545,7 +545,12 @@ def serve_static_files(path):
         return send_from_directory(app.static_folder, path)
     except:
         return send_from_directory(app.static_folder, 'index.html')
+         app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=False)
+         init_db()
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=False)
+
 
 if __name__ == '__main__':
     init_db()
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=False)
+    
