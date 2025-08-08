@@ -397,13 +397,28 @@ def get_students():
         return jsonify({'error': 'Not authenticated'}), 401
     
     conn = get_db()
-    students = conn.execute('''
-        SELECT id, username, first_name, last_name, email, phone, grade
-        FROM users 
-        WHERE role = 'student'
-        ORDER BY grade, last_name, first_name
-    ''').fetchall()
+    # Check if you have a students table with additional info
+    try:
+        students = conn.execute('''
+            SELECT u.id, u.username, u.first_name, u.last_name, u.email, u.phone,
+                   s.student_id, s.grade_level, s.gpa
+            FROM users u
+            LEFT JOIN students s ON s.user_id = u.id
+            WHERE u.role = 'student'
+            ORDER BY u.last_name, u.first_name
+        ''').fetchall()
+    except:
+        # Fallback if students table doesn't exist
+        students = conn.execute('''
+            SELECT id, username, first_name, last_name, email, phone, grade
+            FROM users 
+            WHERE role = 'student'
+            ORDER BY grade, last_name, first_name
+        ''').fetchall()
+    
     conn.close()
+    
+    return jsonify([dict(student) for student in students])
     
     return jsonify([dict(student) for student in students])
 
