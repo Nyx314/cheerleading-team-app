@@ -75,3 +75,32 @@ pip install -r requirements.txt
 python create_demo_data.py
 
 python main.py
+
+## 📸 Screenshots
+
+### Dashboard
+![Dashboard](Screenshot%202025-11-18%20162300.png)
+
+### Competition Goals
+![Goals](Screenshot%202025-11-18%20162343.png)
+
+### Fundraising
+![Fundraising](Screenshot%202025-11-18%20162336.png)
+
+### Academic Alerts
+![Academics](Screenshot%202025-11-18%20162326.png)
+
+### Student Management
+![Students](Screenshot%202025-11-18%20162313.png)
+
+### Team Roster
+![Roster](Screenshot%202025-11-18%20162251.png)
+
+### Analytics
+![Analytics](Screenshot%202025-11-18%20162240.png)
+
+### Team Bonding
+![Team Bonding](Screenshot%202025-11-18%20162230.png)
+
+### Schedule
+![Schedule](Screenshot%202025-11-18%20162215.png)
